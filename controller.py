@@ -2,9 +2,9 @@ import numpy as np
 
 
 class PIDController:
-    def __init__(self, term, error, time):
+    def __init__(self, term, time):
         self.term = term
-        self.error = error
+        self.error = []
         self.time = time
 
     def add_error(self, e):
