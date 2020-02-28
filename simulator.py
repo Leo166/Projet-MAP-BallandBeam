@@ -1,54 +1,53 @@
 import numpy as np
 from scipy import *
-from scipy.integrate import odeint      # Module de résolution des équations différentielles
+from scipy.integrate import odeint
 from matplotlib import pyplot as plt
+from data import *
 from utils import *
-
+from controller import *
 
 class Simulation:
-    def __init__(self):
-
-
-class PIDController:
-    def __init__(self, term, error, time):
-        self.term = term
-        self.error = error
+    def __init__(self, time, system, controller):
         self.time = time
+        self.system = system
+        self.controller = controller
+        self.ic = 0
+        self.bc = 0
 
-    def add_error(self, e):
-        self.error = self.error.append(e)
+    def start_simulation(self):
 
-    def get_control(self):
-        k = self.term
-        error = self.error
-        u = 0
-        u += k[0] * error[-1]
-        if len(error) >= 2:
-            u = k[1] * sum(error) * self.time + k[2]*self.get_derivative()
-        return u
+class DynamicalSystem:
+    def __init__(self, setpoint, control, bc):
+        self.setpoint = setpoint
+        self.control = control
+        self.bc = bc
 
-    def get_derivative(self):
-        error = self.error
-        return (error[-1] - error[-2]) / self.time
+    def solve_equation(self, y, t):
+        ctrl = self.control
+        u = ctrl.get_control()
+        [x1, x2] = y
+        dx1dt = x2
+        if len(ctrl) >= 2:
+            deriv_control = ctrl.get_derivative()
+        else:
+            deriv_control = 0
+        dx2dt = (-eq[1]*x2 - eq[2]*x1 + eq[3]*np.sin(u) + m*x1*deriv_control**2 + eq[4])/eq[0]
+        return [dx1dt, dx2dt]
 
-class ManualController:
-    def __init__(self, namefile):
-        self.position, self.control = self.get_manual_control(namefile)
+    def get_solution(self):
+        bc = self.bc
+        setpoint = self.setpoint
+        f = odeint(self.solve_equation, [setpoint[0], setpoint[1]], [0, dt])
+        pos = f[:, 0][-1]
+        vit = f[:, 1][-1]
+        if pos <= bc[0]:
+            pos = bc[0]
+            vit = 0
+        elif pos >= bc[1]:
+            pos = bc[1]
+            vit = 0
+        position.append(pos)
+        vitesse.append(vit)
+        return np.array([pos, vit])
 
-    def get_manual_control(namefile): #u vecteur de toutes les commandes effectués, données par labview per exemple
-        cmd = []
-        pos = []
-        with open(namefile, "r") as f:
-            n = 0
-            for line in f:
-                if n > 2:
-                    lgn = line.split()
-                    col1 = lgn[1].split("E")
-                    col2 = lgn[2].split("E")
-                    com = float((col1[0]).replace(',', '.'))*10**float(col1[1]) #commande en degré
-                    posm = float((col2[0]).replace(',', '.'))*10**float(col2[1]) #position en centimètre
-                    cmd.append(com)
-                    pos.append(posm*10**-2)
-                    # print(lgn[2].split("E")[0])
-                n += 1
-        return np.array(cmd), np.array(pos)
+simulation = Simulation(15,)
