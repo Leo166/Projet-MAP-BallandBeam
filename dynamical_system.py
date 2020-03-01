@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.integrate import odeint
 
 """Caractéristique système"""
 dt = 50*10**-3      # frequency of mesure [s]
@@ -13,8 +14,7 @@ ro = 997            # density of water [kg/m^3]
 eq = [m + J/r**2, 6*r*eta*np.pi + 0.4, 0, -m*g + ro*vs*g, 0]   #equa_diff 5y" + 4y' + 3y = 2u + const 0.4
 
 class DynamicalSystem:
-    def __init__(self, setpoint, control, bc):
-        self.setpoint = setpoint
+    def __init__(self, control, bc):
         self.control = control
         self.bc = bc
 
@@ -30,10 +30,9 @@ class DynamicalSystem:
         dx2dt = (-eq[1]*x2 - eq[2]*x1 + eq[3]*np.sin(u) + m*x1*deriv_control**2 + eq[4])/eq[0]
         return [dx1dt, dx2dt]
 
-    def get_solution(self):
+    def get_solution(self, ic):
         bc = self.bc
-        setpoint = self.setpoint
-        f = odeint(self.solve_equation, [setpoint[0], setpoint[1]], [0, dt])
+        f = odeint(self.solve_equation, [ic[0], ic[1]], [0, dt])
         pos = f[:, 0][-1]
         vit = f[:, 1][-1]
         if pos <= bc[0]:
@@ -46,5 +45,3 @@ class DynamicalSystem:
         vitesse.append(vit)
         return np.array([pos, vit])
 
-
-# Process the raw date in usable arrays

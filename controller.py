@@ -6,6 +6,8 @@ class PIDController:
         self.term = term
         self.error = []
         self.time = time
+        self.last_control = 0
+        self.need_error = True
 
     def add_error(self, e):
         self.error = self.error.append(e)
@@ -16,17 +18,18 @@ class PIDController:
         u = 0
         u += k[0] * error[-1]
         if len(error) >= 2:
-            u = k[1] * sum(error) * self.time + k[2]*self.get_derivative()
+            u = k[1] * sum(error) * self.time + k[2] * (error[-1] - error[-2]) / self.time
         return u
 
     def get_derivative(self):
-        error = self.error
-        return (error[-1] - error[-2]) / self.time
+        return (self.get_control() - self.last_control) / self.time
 
 class ManualController:
-    def __init__(self, namefile):
+    def __init__(self, namefile, time):
         self.position, self.control = self.load_manual_control(namefile)
+        self.time = time
         self.count = 0
+        self.need_error = False
 
     def counter(self):
         self.count +=1
@@ -36,7 +39,10 @@ class ManualController:
         self.counter()
         return c
 
-    def load_manual_control(namefile): #u vecteur de toutes les commandes effectués, données par labview per exemple
+    def get_derivative(self):
+        return (self.control[self.count] - self.control[self.count-1]) / self.time
+
+    def load_manual_control(self, namefile): #u vecteur de toutes les commandes effectués, données par labview per exemple
         cmd = []
         pos = []
         with open(namefile, "r") as f:
