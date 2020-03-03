@@ -29,8 +29,8 @@ class DynamicalSystem:
         u = self.last_ctrl
         [x1, x2] = y
         dx1dt = x2
-        if len(ctrl.control) >= 2:
-            derivative_control = ctrl.get_derivative()
+        if len(self.control.control) >= 2:
+            derivative_control = self.control.get_derivative()
         else:
             derivative_control = 0
         dx2dt = (-eq[1]*x2 - eq[2]*x1 + eq[3]*np.sin(u) + m*x1*derivative_control**2 + eq[4])/eq[0]

@@ -1,5 +1,5 @@
 import numpy as np
-
+from utils import *
 
 class PIDController:
     def __init__(self, term, time):
@@ -32,7 +32,7 @@ class PIDController:
 
 class ManualController:
     def __init__(self, namefile, time):
-        self.position, self.control = self.load_manual_control(namefile)
+        self.control, self.position = self.load_manual_control(namefile)
         self.time = time
         self.count = 0
         self.need_error = False
@@ -40,9 +40,10 @@ class ManualController:
     def counter(self):
         self.count += 1
 
-    def get_control(self):
+    def get_control(self, *other):
         c = self.control[self.count]
-        self.counter()
+        if other:
+            self.counter()
         return c
 
     def get_derivative(self):
@@ -60,8 +61,11 @@ class ManualController:
                     col2 = lgn[2].split("E")
                     com = float((col1[0]).replace(',', '.'))*10**float(col1[1]) #commande en degré
                     posm = float((col2[0]).replace(',', '.'))*10**float(col2[1]) #position en centimètre
+                    com -= 6.5
+                    com = convert_angle(com)
+                    com = np.deg2rad(com)
                     cmd.append(com)
                     pos.append(posm*10**-2)
-                    # print(lgn[2].split("E")[0])
                 n += 1
+        print("long", len(cmd))
         return np.array(cmd), np.array(pos)
