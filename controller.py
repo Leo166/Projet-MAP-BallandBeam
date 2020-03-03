@@ -6,23 +6,29 @@ class PIDController:
         self.term = term
         self.error = []
         self.time = time
-        self.last_control = 0
+        self.control = []
         self.need_error = True
 
     def add_error(self, e):
-        self.error = self.error.append(e)
+        self.error.append(e)
 
-    def get_control(self):
+    def add_control(self, a):
+        self.control.append(a)
+
+    def get_control(self, *other):
         k = self.term
         error = self.error
         u = 0
         u += k[0] * error[-1]
         if len(error) >= 2:
             u = k[1] * sum(error) * self.time + k[2] * (error[-1] - error[-2]) / self.time
+        if other:
+            self.add_control(u)
         return u
 
     def get_derivative(self):
-        return (self.get_control() - self.last_control) / self.time
+        return (self.control[-1] - self.control[-2]) / self.time
+
 
 class ManualController:
     def __init__(self, namefile, time):
@@ -32,7 +38,7 @@ class ManualController:
         self.need_error = False
 
     def counter(self):
-        self.count +=1
+        self.count += 1
 
     def get_control(self):
         c = self.control[self.count]

@@ -17,31 +17,36 @@ class DynamicalSystem:
     def __init__(self, control, bc):
         self.control = control
         self.bc = bc
+        self.position = []
+        self.velocity = []
+
+    def add_data(self, data):
+        self.position.append(data[0])
+        self.velocity.append(data[1])
 
     def solve_equation(self, y, t):
         ctrl = self.control
-        u = ctrl.get_control()
+        u = ctrl.get_control(True)
         [x1, x2] = y
         dx1dt = x2
-        if len(ctrl) >= 2:
-            deriv_control = ctrl.get_derivative()
+        if len(ctrl.control) >= 2:
+            derivative_control = ctrl.get_derivative()
         else:
-            deriv_control = 0
-        dx2dt = (-eq[1]*x2 - eq[2]*x1 + eq[3]*np.sin(u) + m*x1*deriv_control**2 + eq[4])/eq[0]
+            derivative_control = 0
+        dx2dt = (-eq[1]*x2 - eq[2]*x1 + eq[3]*np.sin(u) + m*x1*derivative_control**2 + eq[4])/eq[0]
         return [dx1dt, dx2dt]
 
     def get_solution(self, ic):
         bc = self.bc
         f = odeint(self.solve_equation, [ic[0], ic[1]], [0, dt])
         pos = f[:, 0][-1]
-        vit = f[:, 1][-1]
+        vel = f[:, 1][-1]
         if pos <= bc[0]:
             pos = bc[0]
-            vit = 0
+            vel = 0
         elif pos >= bc[1]:
             pos = bc[1]
-            vit = 0
-        position.append(pos)
-        vitesse.append(vit)
-        return np.array([pos, vit])
+            vel = 0
+        self.add_data([pos, vel])
+        return np.array([pos, vel])
 
