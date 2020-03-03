@@ -54,6 +54,8 @@ simulation.start_simulation()
 position = system.position
 vitesse = system.velocity
 command = controller.control
+print(np.array(command))
+
 
 t = np.arange(0.0, time_simulation+2*dt, dt)
 # plt.plot(t, np.array(positionsys*100), label="System [cm]")

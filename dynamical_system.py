@@ -17,6 +17,7 @@ class DynamicalSystem:
     def __init__(self, control, bc):
         self.control = control
         self.bc = bc
+        self.last_ctrl = 0
         self.position = []
         self.velocity = []
 
@@ -25,8 +26,7 @@ class DynamicalSystem:
         self.velocity.append(data[1])
 
     def solve_equation(self, y, t):
-        ctrl = self.control
-        u = ctrl.get_control(True)
+        u = self.last_ctrl
         [x1, x2] = y
         dx1dt = x2
         if len(ctrl.control) >= 2:
@@ -38,6 +38,7 @@ class DynamicalSystem:
 
     def get_solution(self, ic):
         bc = self.bc
+        self.last_ctrl = self.control.get_control(True)
         f = odeint(self.solve_equation, [ic[0], ic[1]], [0, dt])
         pos = f[:, 0][-1]
         vel = f[:, 1][-1]
