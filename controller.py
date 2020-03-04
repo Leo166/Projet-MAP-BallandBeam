@@ -22,6 +22,8 @@ class PIDController:
         u += k[0] * error[-1]
         if len(error) >= 2:
             u += k[1] * sum(error) * self.time + k[2] * (error[-1] - error[-2]) / self.time
+        u = convert_angle(u-6.5)
+        u = np.deg2rad(u)
         if other:
             self.add_control(u)
         return u
@@ -61,10 +63,10 @@ class ManualController:
                     col2 = lgn[2].split("E")
                     com = float((col1[0]).replace(',', '.'))*10**float(col1[1]) #commande en degré
                     posm = float((col2[0]).replace(',', '.'))*10**float(col2[1]) #position en centimètre
-                    com -= 6.5
+                    # com -= 6.5
                     com = convert_angle(com)
                     com = np.deg2rad(com)
                     cmd.append(com)
-                    pos.append(posm*10**-2)
+                    pos.append(posm)
                 n += 1
         return np.array(cmd), np.array(pos)
