@@ -21,7 +21,7 @@ class PIDController:
         u = 0
         u += k[0] * error[-1]
         if len(error) >= 2:
-            u = k[1] * sum(error) * self.time + k[2] * (error[-1] - error[-2]) / self.time
+            u += k[1] * sum(error) * self.time + k[2] * (error[-1] - error[-2]) / self.time
         if other:
             self.add_control(u)
         return u
@@ -67,5 +67,4 @@ class ManualController:
                     cmd.append(com)
                     pos.append(posm*10**-2)
                 n += 1
-        print("long", len(cmd))
         return np.array(cmd), np.array(pos)

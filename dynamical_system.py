@@ -12,12 +12,13 @@ vs = 1.414*10**-5   # ball volume [m^3]
 ro = 997            # density of water [kg/m^3]
 
 eq = [m + J/r**2, 6*r*eta*np.pi + 0.4, 0, -m*g + ro*vs*g, 0]   #equa_diff 5y" + 4y' + 3y = 2u + const 0.4
+# eq = [5, 4, 3, 2, 0]
 
 class DynamicalSystem:
     def __init__(self, control, bc):
         self.control = control
         self.bc = bc
-        self.last_ctrl = 0
+        self.current_ctrl = 0
         self.position = []
         self.velocity = []
 
@@ -26,7 +27,7 @@ class DynamicalSystem:
         self.velocity.append(data[1])
 
     def solve_equation(self, y, t):
-        u = self.last_ctrl
+        u = self.current_ctrl
         [x1, x2] = y
         dx1dt = x2
         if len(self.control.control) >= 2:
@@ -38,7 +39,7 @@ class DynamicalSystem:
 
     def get_solution(self, ic):
         bc = self.bc
-        self.last_ctrl = self.control.get_control(True)
+        self.current_ctrl = self.control.get_control(True)
         f = odeint(self.solve_equation, [ic[0], ic[1]], [0, dt])
         pos = f[:, 0][-1]
         vel = f[:, 1][-1]
