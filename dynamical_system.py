@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.integrate import odeint
+from utils import *
 
 """Caractéristique système"""
 dt = 50*10**-3      # frequency of mesure [s]
@@ -10,8 +11,11 @@ J = (2*m*r**2)/5    # inertial moment
 eta = 10**-5        # dynamic viscosity [kg/ms]
 vs = 1.414*10   # ball volume [m^3]
 ro = 997/(10**6)            # density of water [kg/m^3]
-
-eq = [m + J/r**2, 6*r*eta*np.pi + 0.6, 0, -m*g + ro*vs*g, 0]   #equa_diff 5y" + 4y' + 3y = 2u + const 0.4
+param = [0.5, 0]
+# param = [0.05392127, 0.31127394] #ok
+# param = [0.60276305, 0.14232733]
+# param = [0.15394507, 0.27942107]
+eq = [m + J/r**2 + param[1], 6*r*eta*np.pi + param[0], 0, -m*g + ro*vs*g, 0]   #equa_diff 5y" + 4y' + 3y = 2u + const 0.4
 # eq = [5, 4, 3, 2, 0]
 
 class DynamicalSystem:
@@ -49,6 +53,7 @@ class DynamicalSystem:
         elif pos >= bc[1]:
             pos = bc[1]
             vel = 0
+        # pos = projection(self.current_ctrl, pos, False)
         self.add_data([pos, vel])
         return np.array([pos, vel])
 

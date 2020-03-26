@@ -15,14 +15,14 @@ class PIDController:
     def add_control(self, a):
         self.control.append(a)
 
-    def get_control(self, *other):
+    def get_control(self, *other): #control en radian
         k = self.term
         error = self.error
         u = 0
         u += k[0] * error[-1]
         if len(error) >= 2:
             u += k[1] * sum(error) * self.time + k[2] * (error[-1] - error[-2]) / self.time
-        u = convert_angle(u-6.5)
+        u = convert_angle_experimental(u) #motor angle [°]
         u = np.deg2rad(u)
         if other:
             self.add_control(u)
@@ -38,6 +38,7 @@ class ManualController:
         self.time = time
         self.count = 0
         self.need_error = False
+        self.last_u = 0
 
     def counter(self):
         self.count += 1
@@ -63,8 +64,8 @@ class ManualController:
                     col2 = lgn[2].split("E")
                     com = float((col1[0]).replace(',', '.'))*10**float(col1[1]) #commande en degré
                     posm = float((col2[0]).replace(',', '.'))*10**float(col2[1]) #position en centimètre
-                    # com -= 6.5
-                    com = convert_angle(com)
+                    # com -= 7.5
+                    com = convert_angle_experimental(com)
                     com = np.deg2rad(com)
                     cmd.append(com)
                     pos.append(posm)

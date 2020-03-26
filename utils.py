@@ -1,4 +1,5 @@
 import numpy as np
+from matplotlib import pyplot as plt
 
 """Tools used in the simulator"""
 
@@ -28,3 +29,92 @@ def convert_angle(al, dg=True):
     beta = np.arcsin((y - Dy) / L)
     beta = beta * 180 / np.pi
     return beta
+
+#le décalage d'angle entre la beam et le moteur est pris en compte dans la conversion et donc dans le système. Par conséquent, pas besoin de rajouter +-7.5
+def convert_angle_experimental(a):
+    coef = [2.87661110e-04,  2.72469099e-01, - 2.05888233e+00]
+    return coef[0]*a**2 + coef[1]*a + coef[2]
+
+dt = 50*10**-3
+def correction_motor_control(cmd):
+    control = []
+    deriv = [0]
+    acc = [0]
+    prev_control = 0
+    derivation_limit = np.deg2rad(0.1)
+    acc_limit = np.deg2rad(1000)
+    for count, i in enumerate(cmd):
+        current_control = cmd[count]
+        # if prev_control != 0:
+        derivation = (current_control - prev_control)
+        deriv.append(derivation)
+        acceleration = (deriv[-1] - deriv[-2])
+        acc.append(acceleration)
+        if abs(acceleration) > acc_limit:
+            if acceleration > 0:
+                d = deriv[-2] + acc_limit
+            else:
+                d = deriv[-2] - acc_limit
+            deriv[-1] = d
+            derivation = d
+
+        if abs(derivation) > derivation_limit:
+            if derivation > 0:
+                current_control = prev_control + derivation_limit
+            else:
+                current_control = prev_control - derivation_limit
+        control.append(current_control)
+        prev_control = current_control
+    return control, deriv, acc
+
+
+def projection(beta, r_ordi, dg=True):
+    h = 0.70 * 10 ** 2  # hauteur de la caméra [cm]
+    d = -0.022 * 10 ** 2  # décalage du 0 de la caméra par rapport au centre de la beam
+    c = 0.035 * 10 ** 2  # hauteur du centre de la balle par rapport au centre de rotation de la beam
+    lam = -np.arctan(d / h)  # angle de décalage
+
+    # Convertir beta
+    if dg:
+        beta = beta * np.pi / 180
+
+    # Calcul de l'angle de la caméra grâce à la fonction d'interpolation
+    gamma_theorique = (r_ordi - 4.159161) * np.pi / (1.306482 * 180)
+    # gamma centré (centre de la beam)
+    gamma_c = gamma_theorique + lam
+
+    # Calcul de la position de la balle dans la beam
+    r_theorique = ((np.tan(gamma_c) * (c + h - (d * np.cos(beta)))) + (d * np.sin(beta))) / (np.cos(beta) + (np.tan(gamma_c) * np.sin(beta)))
+    # conditions des limites de la beam
+    # if r_theorique < -36.5:
+    #     r_theorique = -36.5
+    # if r_theorique > 36.8:
+    #     r_theorique = 36.8
+
+    return r_theorique
+
+
+def graphique(t, pos, vel, posys, cmd):
+    for count, i in enumerate(t):
+        plt.subplot(2, 1, 1)
+        plt.plot(t[count], cmd[count], label="Control")
+        c = correction_motor_control(cmd[count])
+        # plt.plot(t[count], c[0][0:len(c[0])], label="Control")
+        # plt.plot(t[count], c[1][0:len(c[0])], label="Control speed")
+        # plt.plot(t[count], c[2][0:len(c[0])], label="Control acc")
+        # plt.scatter(t[count], correction_motor_control(cmd[count]), s = 5, c='red')
+        # plt.title('A tale of 2 subplots')
+        plt.ylabel('Motor angle [°]')
+        # plt.ylabel('Position [cm]')
+        plt.legend()
+
+        plt.subplot(2, 1, 2)
+        plt.plot(t[count], pos[count], label="Position (simul)")
+        plt.plot(t[count], vel[count], "--", label="Velocity (simul)")
+        if len(posys) !=0:
+            plt.plot(t[count], posys[count], label="Position")
+        plt.legend()
+
+        plt.xlabel('Time [s]')
+        plt.ylabel('Position [cm]')
+        plt.show()
