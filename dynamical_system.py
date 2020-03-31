@@ -11,10 +11,12 @@ J = (2*m*r**2)/5    # inertial moment
 eta = 10**-5        # dynamic viscosity [kg/ms]
 vs = 1.414*10   # ball volume [m^3]
 ro = 997/(10**6)            # density of water [kg/m^3]
-param = [0.5, 0]
+param = [0, 0, 0]
 # param = [0.05392127, 0.31127394] #ok
 # param = [0.60276305, 0.14232733]
-# param = [0.15394507, 0.27942107]
+# param = [0.21826902, 0.17563941]
+# param = [0.20354226, 0.13743393, 0] #ok
+param = [0.19986816, 0.8208113, 0]
 eq = [m + J/r**2 + param[1], 6*r*eta*np.pi + param[0], 0, -m*g + ro*vs*g, 0]   #equa_diff 5y" + 4y' + 3y = 2u + const 0.4
 # eq = [5, 4, 3, 2, 0]
 
@@ -38,7 +40,7 @@ class DynamicalSystem:
             derivative_control = self.control.get_derivative()
         else:
             derivative_control = 0
-        dx2dt = (-eq[1]*x2 - eq[2]*x1 + eq[3]*np.sin(u) + m*x1*derivative_control**2 + eq[4])/eq[0]
+        dx2dt = (-eq[1]*x2 - eq[2]*x1 + eq[3]*np.sin(u) + m*x1*derivative_control**2 + param[2] + eq[4])/eq[0]
         return [dx1dt, dx2dt]
 
     def get_solution(self, ic):
@@ -53,7 +55,7 @@ class DynamicalSystem:
         elif pos >= bc[1]:
             pos = bc[1]
             vel = 0
-        # pos = projection(self.current_ctrl, pos, False)
-        self.add_data([pos, vel])
+
+        self.add_data([projection(self.current_ctrl, pos, False), vel])
         return np.array([pos, vel])
 

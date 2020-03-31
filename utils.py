@@ -68,7 +68,7 @@ def correction_motor_control(cmd):
     return control, deriv, acc
 
 
-def projection(beta, r_ordi, dg=True):
+def projection(beta, r_reel, dg=True):
     h = 0.70 * 10 ** 2  # hauteur de la caméra [cm]
     d = -0.022 * 10 ** 2  # décalage du 0 de la caméra par rapport au centre de la beam
     c = 0.035 * 10 ** 2  # hauteur du centre de la balle par rapport au centre de rotation de la beam
@@ -78,20 +78,19 @@ def projection(beta, r_ordi, dg=True):
     if dg:
         beta = beta * np.pi / 180
 
-    # Calcul de l'angle de la caméra grâce à la fonction d'interpolation
-    gamma_theorique = (r_ordi - 4.159161) * np.pi / (1.306482 * 180)
-    # gamma centré (centre de la beam)
-    gamma_c = gamma_theorique + lam
+    # Origine est le centre de rotation de la beam
+    Bx = d * np.sin(beta) + (r_reel * np.cos(beta))  # position du centre de la balle
+    By = -d * np.cos(beta) + (r_reel * np.sin(beta))  # position du centre de la balle
+    Cy = c + h  # position de la caméra
 
-    # Calcul de la position de la balle dans la beam
-    r_theorique = ((np.tan(gamma_c) * (c + h - (d * np.cos(beta)))) + (d * np.sin(beta))) / (np.cos(beta) + (np.tan(gamma_c) * np.sin(beta)))
-    # conditions des limites de la beam
-    # if r_theorique < -36.5:
-    #     r_theorique = -36.5
-    # if r_theorique > 36.8:
-    #     r_theorique = 36.8
+    # calcul de gamma centré(angle 0 à la verticale)
+    gamma_centre = np.arctan(Bx / (Cy - By))
+    # calcul de gamma (angle réel de la caméra (centre décalé))
+    gamma = gamma_centre - lam
 
-    return r_theorique
+    r_ordi = (gamma * 1.306482 * 180 + 4.159161 * np.pi) / np.pi
+
+    return r_ordi
 
 
 def graphique(t, pos, vel, posys, cmd):
@@ -110,7 +109,7 @@ def graphique(t, pos, vel, posys, cmd):
 
         plt.subplot(2, 1, 2)
         plt.plot(t[count], pos[count], label="Position (simul)")
-        plt.plot(t[count], vel[count], "--", label="Velocity (simul)")
+        # plt.plot(t[count], vel[count], "--", label="Velocity (simul)")
         if len(posys) !=0:
             plt.plot(t[count], posys[count], label="Position")
         plt.legend()
