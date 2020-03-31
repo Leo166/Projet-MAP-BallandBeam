@@ -7,6 +7,7 @@ from scipy.optimize import minimize
 from dynamical_system import *
 from utils import *
 from controller import *
+from optimize import *
 
 class Simulation:
     def __init__(self, time, system, controller, set_point, ic, bc):
@@ -45,13 +46,14 @@ ic = [0, 0]            # initial position and speed [m]
 bc = [-100, 38.5]    #[-34.1, 38.15]
 
 # controller = PIDController([-10, 0, 0], dt)
-controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_30_005.txt", time_simulation)
-controller1 = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_40_005.txt", time_simulation)
+controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_20_005.txt", time_simulation)
+controller1 = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_30_005.txt", time_simulation)
+controller2 = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_40_005.txt", time_simulation)
 # controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/squarred/square_20_10.txt", time_simulation)
 # controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/closed_loop/test_1.txt", time_simulation)
 system = DynamicalSystem(controller, bc)
-ic = [controller.position[0], 0]            # initial position and speed [m]
-simulation = Simulation(time_simulation, system, controller, set_point, ic, bc)
+# ic = [controller.position[0], 0]            # initial position and speed [m]
+# simulation = Simulation(time_simulation, system, controller, set_point, ic, bc)
 # simulation.start_simulation()
 
 position = system.position
@@ -67,6 +69,14 @@ t = np.arange(0.0, time_simulation, dt)
 # graphique([t], [position[0:-1]], [velocity[0:-1]], [positionsys[1:len(position)]], [command[1:len(position)]])
 # breakpoint()
 
+ctrl = [controller, controller1]
+n = 0
+def opt_para_more_data(x):
+    pp = []
+    for cont in ctrl:
+        pp.append(opt_param(x, cont))
+    return max(pp)
+
 # [0, 0] -- sinus -- Nelder-Mead -- [0.05392127 0.31127394] -- 14.831
 # [0, 0] -- sinus -- BFGS, Powell -- [0.60275368 0.14233554] -- 2.3928
 
@@ -76,7 +86,7 @@ t = np.arange(0.0, time_simulation, dt)
 
 # [0, 0] -- carré -- BFGS, Powell -- [0.52422432 0.08500503] -- 5.0794
 # [0, 0] -- carré -- Nelder-Mead -- [0.08980634 0.27940342] -- 13.1126
-res = minimize(find_best_param, np.array([0, 0]), method='BFGS', tol=1e-6)
+res = minimize(opt_para_more_data, np.array([0.2, 0.2, 0]), method='BFGS', tol=1e-6)
 print(res)
 print(res.x)
 print(res.fun)
