@@ -24,7 +24,7 @@ class Simulation:
         t = 0
         xt = self.ic
         xs = self.set_point
-        self.system.add_data(self.ic)
+        self.system.add_data([projection(self.controller.control[0], self.ic[0], False), self.ic[1]])
         while t <= self.time and self.run:  # bad
             if self.controller.need_error:
                 self.controller.add_error(xs - xt[0])
@@ -40,21 +40,24 @@ class Simulation:
         return
 
 
-time_simulation = 15   # duration of the simulation [s]
+time_simulation = 20   # duration of the simulation [s]
 set_point = 3  # point where the ball has to be stabilized [m]
 ic = [0, 0]            # initial position and speed [m]
-bc = [-100, 38.5]    #[-34.1, 38.15]
+bc = [-38.15, 38.15]    #[-34.1, 38.15]
 
 # controller = PIDController([-10, 0, 0], dt)
-controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_20_005.txt", time_simulation)
-controller1 = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_30_005.txt", time_simulation)
-controller2 = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_40_005.txt", time_simulation)
-# controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/squarred/square_20_10.txt", time_simulation)
-# controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/closed_loop/test_1.txt", time_simulation)
+# controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_20_005.txt", time_simulation)
+# controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_30_005.txt", time_simulation)
+# controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_40_005.txt", time_simulation)
+controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/squarred/square_20_20.txt", time_simulation)
+controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/squarred/square_30_20.txt", time_simulation)
+# controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/squarred/square_40_20.txt", time_simulation)
+# controller4 = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/free_control/test2.txt", time_simulation)
+# controller5 = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/free_control/test3.txt", time_simulation)
 system = DynamicalSystem(controller, bc)
-# ic = [controller.position[0], 0]            # initial position and speed [m]
-# simulation = Simulation(time_simulation, system, controller, set_point, ic, bc)
-# simulation.start_simulation()
+ic = [controller.position[0], 0]            # initial position and speed [m]
+simulation = Simulation(time_simulation, system, controller, set_point, ic, bc)
+simulation.start_simulation()
 
 position = system.position
 velocity = system.velocity
@@ -62,13 +65,16 @@ command = controller.control
 # print(command)
 # print(command)
 positionsys = controller.position
-# print(max(positionsys))
+print(position)
+# print(np.where(positionsys==38.817591))
+print(command)
 # print(np.array(command))
 
 t = np.arange(0.0, time_simulation, dt)
-# graphique([t], [position[0:-1]], [velocity[0:-1]], [positionsys[1:len(position)]], [command[1:len(position)]])
-# breakpoint()
+graphique([t], [position[0:-1]], [velocity[0:-1]], [positionsys[1:len(position)]], [command[1:len(position)]])
+breakpoint()
 
+# ctrl = [controller, controller1, controller2, controller3, controller4, controller5]
 ctrl = [controller, controller1]
 n = 0
 def opt_para_more_data(x):
@@ -86,7 +92,7 @@ def opt_para_more_data(x):
 
 # [0, 0] -- carré -- BFGS, Powell -- [0.52422432 0.08500503] -- 5.0794
 # [0, 0] -- carré -- Nelder-Mead -- [0.08980634 0.27940342] -- 13.1126
-res = minimize(opt_para_more_data, np.array([0.2, 0.2, 0]), method='BFGS', tol=1e-6)
+res = minimize(opt_para_more_data, np.array([0.2, 0.2, 0, 0]), method='BFGS', tol=1e-6)
 print(res)
 print(res.x)
 print(res.fun)

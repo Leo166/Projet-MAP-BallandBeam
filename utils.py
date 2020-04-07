@@ -89,14 +89,36 @@ def projection(beta, r_reel, dg=True):
     gamma = gamma_centre - lam
 
     r_ordi = (gamma * 1.306482 * 180 + 4.159161 * np.pi) / np.pi
-
     return r_ordi
+
+
+def projection_inverse(beta, r_ordi, dg=True):
+    h = 0.70 * 10 ** 2  # hauteur de la caméra [cm]
+    d = -0.022 * 10 ** 2  # décalage du 0 de la caméra par rapport au centre de la beam
+    c = 0.035 * 10 ** 2  # hauteur du centre de la balle par rapport au centre de rotation de la beam
+    lam = -np.arctan(d / h)  # angle de décalage
+
+    # Convertir beta
+    if dg:
+        beta = beta * np.pi / 180
+
+    # Calcul de l'angle de la caméra grâce à la fonction d'interpolation
+    gamma_theorique = (r_ordi - 4.159161) * np.pi / (1.306482 * 180)
+    # gamma centré (centre de la beam)
+    gamma_c = gamma_theorique + lam
+
+    # Calcul de la position de la balle dans la beam
+    r_theorique = ((np.tan(gamma_c) * (c + h - (d * np.cos(beta)))) + (d * np.sin(beta))) / (
+                np.cos(beta) + (np.tan(gamma_c) * np.sin(beta)))
+    # conditions des limites de la beam
+
+    return r_theorique
 
 
 def graphique(t, pos, vel, posys, cmd):
     for count, i in enumerate(t):
         plt.subplot(2, 1, 1)
-        plt.plot(t[count], cmd[count], label="Control")
+        plt.plot(t[count], np.rad2deg(cmd[count]), label="Control")
         c = correction_motor_control(cmd[count])
         # plt.plot(t[count], c[0][0:len(c[0])], label="Control")
         # plt.plot(t[count], c[1][0:len(c[0])], label="Control speed")

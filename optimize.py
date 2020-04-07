@@ -9,7 +9,7 @@ def opt_param(x, controller):
     time_simulation = 15
     bc = [-100, 38.5]
     system = DynamicalSystem(controller, bc)
-    def solve_equation(y, t, p, k, s):
+    def solve_equation(y, t, p, k, s, f):
         u = controller.last_u
         [x1, x2] = y
         dx1dt = x2
@@ -17,8 +17,7 @@ def opt_param(x, controller):
             derivative_control = controller.get_derivative()
         else:
             derivative_control = 0
-        dx2dt = (-(eq[1] + p) * x2 - eq[2] * x1 + eq[3] * np.sin(u) + s + m * x1 * derivative_control ** 2 + eq[4]) / (
-                    eq[0] + k)
+        dx2dt = (-(eq[1] + k) * x2 - eq[2] * x1 + (eq[3] + s) * np.sin(u) + f + m * x1 * derivative_control ** 2 + eq[4]) / (eq[0] + p)
         return [dx1dt, dx2dt]
 
     def get_solution(ic, arg):
@@ -40,7 +39,7 @@ def opt_param(x, controller):
         xt = [controller.position[0], 0]
         system.add_data(xt)
         while t < time_simulation:  # bad
-            xt = get_solution(xt, (x[0], x[1], x[2]))
+            xt = get_solution(xt, (x[0], x[1], x[2], x[3]))
             t += dt
         # print(len(system.position))
         # print(len(controller.position))
