@@ -67,6 +67,18 @@ def correction_motor_control(cmd):
         prev_control = current_control
     return control, deriv, acc
 
+def correction_low_speed(speed):
+    new_speed = speed
+    su = 0.5
+    # c = np.sqrt(np.abs(speed))
+    c = (speed**2)
+    if abs(speed) <= su:
+        if speed > 0:
+            new_speed = c
+        elif speed < 0:
+            new_speed = -c
+    return new_speed
+
 
 def projection(beta, r_reel, dg=True):
     h = 0.70 * 10 ** 2  # hauteur de la caméra [cm]
@@ -114,6 +126,16 @@ def projection_inverse(beta, r_ordi, dg=True):
 
     return r_theorique
 
+def get_setpoints(filename):
+    pos = []
+    with open(filename, "r") as f:
+        n = 0
+        for line in f:
+            if n > 2:
+                lgn = line.split()
+                pos.append(float(lgn[0].replace(',', '.')))
+            n += 1
+    return np.array(pos)
 
 def graphique(t, pos, vel, posys, cmd):
     for count, i in enumerate(t):
@@ -125,16 +147,23 @@ def graphique(t, pos, vel, posys, cmd):
         # plt.plot(t[count], c[2][0:len(c[0])], label="Control acc")
         # plt.scatter(t[count], correction_motor_control(cmd[count]), s = 5, c='red')
         # plt.title('A tale of 2 subplots')
-        plt.ylabel('Motor angle [°]')
+        plt.ylabel('Beam angle [°]')
         # plt.ylabel('Position [cm]')
         plt.legend()
 
         plt.subplot(2, 1, 2)
         plt.plot(t[count], pos[count], label="Position (simul)")
-        # plt.plot(t[count], vel[count], "--", label="Velocity (simul)")
-        if len(posys) !=0:
+        plt.plot(t[count], vel[count], "--", label="Velocity (simul)")
+        # plt.plot(t[count], acc[count], "--", label="acceleration (simul)")
+        # for c, j in enumerate(acc[count]):
+        #     if j <= 0.1 and j >= -0.1:
+        #         plt.scatter(t[count][c], j, s=5)
+        if len(posys) != 0:
             plt.plot(t[count], posys[count], label="Position")
+        plt.hlines(projection(convert_angle_experimental(0), 20), 0, t[0][-1], 'black', '--', linewidth=1)
+        plt.hlines(projection(convert_angle_experimental(0), -20), 0, t[0][-1], 'black', '--', linewidth=1)
         plt.legend()
+
 
         plt.xlabel('Time [s]')
         plt.ylabel('Position [cm]')

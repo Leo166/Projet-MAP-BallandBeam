@@ -33,8 +33,8 @@ class PIDController:
 
 
 class ManualController:
-    def __init__(self, namefile, time):
-        self.control, self.position = self.load_manual_control(namefile)
+    def __init__(self, filename, time):
+        self.control, self.position = self.load_manual_control(filename)
         self.time = time
         self.count = 0
         self.need_error = False
@@ -45,6 +45,9 @@ class ManualController:
 
     def get_control(self, *other):
         c = self.control[self.count]
+        # if abs(np.rad2deg(self.control[self.count+1]) - np.rad2deg(self.control[self.count])) >= 10:
+        #     c /= 2
+        #     print("ok")
         if other:
             self.counter()
         return c
@@ -52,14 +55,15 @@ class ManualController:
     def get_derivative(self):
         return (self.control[self.count] - self.control[self.count-1]) / self.time
 
-    def load_manual_control(self, namefile): #u vecteur de toutes les commandes effectués, données par labview per exemple
+    def load_manual_control(self, filename): #u vecteur de toutes les commandes effectués, données par labview per exemple
         cmd = []
         pos = []
-        with open(namefile, "r") as f:
+        with open(filename, "r") as f:
             n = 0
             for line in f:
                 if n > 2:
                     lgn = line.split()
+                    # print(lgn)
                     col1 = lgn[1].split("E")
                     col2 = lgn[2].split("E")
                     com = float((col1[0]).replace(',', '.'))*10**float(col1[1]) #commande en degré

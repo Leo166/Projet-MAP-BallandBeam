@@ -6,7 +6,9 @@ from utils import *
 dt = 50*10**-3      # frequency of mesure [s]
 g = 9.81*10**2           # acceleration [cm/s^2]
 m = 0.0559          # mass [kg]
-r = 15*10**-1       # ball radius [cm]
+m = 0.0576          # mass [kg] FW
+# r = 15*10**-1       # ball radius [cm]
+r = 15.1*10**-1       # ball radius [cm] FW
 J = (2*m*r**2)/5    # inertial moment
 eta = 10**-5        # dynamic viscosity [kg/ms]
 vs = 1.414*10       # ball volume [cm^3]
@@ -15,11 +17,10 @@ param = [0, 0, 0, 0, 0]
 # param = [0.05392127, 0.31127394] #ok
 # param = [0.20354226, 0.13743393, 0] #ok
 # param = [0.10745968, 0.30602608, 0,-0.93278782]#ok
-# param = [1.99577884e-01,  1.91112826e-01, -4.62783167e-05, -2.14843948e-03]
-# param = [1.44291173e-01, 2.33030650e-01, 9.76421535e-05, 5.18408089e-04]
-# param = [0.11809485,  0.2819055,  -0.0154096,  -0.41265424]#ok
-# param = [ 0.12857387,  0.25753001,  1.17179222, -0.5302399] tout fichier
-param = [0.04941605,  0.29452368, -0.01351697, -0.76149812]
+param = [0.11809485,  0.2819055,  -0.0154096,  -0.41265424]#ok
+# param = [ 0.12857387,  0.25753001,  1.17179222, -0.5302399] #tout fichier
+# param = [0.04941605,  0.29452368, -0.01351697, -0.76149812]
+# param = [ 0.09244046,  0.16496476, -0.05327178, -0.19836205]
 eq = [m + J/r**2 + param[0], 6*r*eta*np.pi + param[1], 0, -m*g + ro*vs*g + param[2], 0]   #equa_diff 5y" + 4y' + 3y = 2u + const 0.4
 # eq = [5, 4, 3, 2, 0]
 
@@ -30,9 +31,12 @@ class DynamicalSystem:
         self.current_ctrl = 0
         self.position = []
         self.velocity = []
+        self.acceleration = []
 
     def add_data(self, data):
         self.position.append(data[0])
+        if len(self.velocity) != 0:
+            self.acceleration.append((data[1]-self.velocity[-1])/dt)
         self.velocity.append(data[1])
 
     def solve_equation(self, y, t):
@@ -58,9 +62,14 @@ class DynamicalSystem:
         elif pos >= bc[1]:
             pos = bc[1]
             vel = 0
-        # print(pos), print(vel), print(self.current_ctrl)
-        # if len(self.position) >= 5:
-        #     breakpoint()
+
+        # if abs(vel) <= 2:
+        #     if abs(self.current_ctrl) <= np.deg2rad(1):
+        #         pos = ic[0]
+        #         vel = 0
+
+        # vel = correction_low_speed(vel)
+
         self.add_data([projection(self.current_ctrl, pos, False), vel])
         return np.array([pos, vel])
 
