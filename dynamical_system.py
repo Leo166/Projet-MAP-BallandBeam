@@ -6,21 +6,19 @@ from utils import *
 dt = 50*10**-3      # frequency of mesure [s]
 g = 9.81*10**2           # acceleration [cm/s^2]
 m = 0.0559          # mass [kg]
-m = 0.0576          # mass [kg] FW
-# r = 15*10**-1       # ball radius [cm]
-r = 15.1*10**-1       # ball radius [cm] FW
+# m = 0.0576          # mass [kg] FW
+r = 15*10**-1       # ball radius [cm]
+# r = 15.1*10**-1       # ball radius [cm] FW
 J = (2*m*r**2)/5    # inertial moment
 eta = 10**-5        # dynamic viscosity [kg/ms]
 vs = 1.414*10       # ball volume [cm^3]
 ro = 997/(10**6)            # density of water [kg/cm^3]
 param = [0, 0, 0, 0, 0]
-# param = [0.05392127, 0.31127394] #ok
-# param = [0.20354226, 0.13743393, 0] #ok
 # param = [0.10745968, 0.30602608, 0,-0.93278782]#ok
-param = [0.11809485,  0.2819055,  -0.0154096,  -0.41265424]#ok
+# param = [0.11809485,  0.2819055,  -0.0154096,  -0.41265424]   #ok ref
+# param = [0.11734496,  0.28836237, -0.12857947, -0.61645939]   #pas mal
+# param = [0.12921003,  0.27934707, -0.12065793, -0.42997013]
 # param = [ 0.12857387,  0.25753001,  1.17179222, -0.5302399] #tout fichier
-# param = [0.04941605,  0.29452368, -0.01351697, -0.76149812]
-# param = [ 0.09244046,  0.16496476, -0.05327178, -0.19836205]
 eq = [m + J/r**2 + param[0], 6*r*eta*np.pi + param[1], 0, -m*g + ro*vs*g + param[2], 0]   #equa_diff 5y" + 4y' + 3y = 2u + const 0.4
 # eq = [5, 4, 3, 2, 0]
 
@@ -63,10 +61,12 @@ class DynamicalSystem:
             pos = bc[1]
             vel = 0
 
-        # if abs(vel) <= 2:
-        #     if abs(self.current_ctrl) <= np.deg2rad(1):
-        #         pos = ic[0]
-        #         vel = 0
+        print(vel)
+        if abs(vel) <= 0.34:
+            if self.control.count >= 1:
+                if abs(self.control.control[self.control.count] - self.current_ctrl) <= np.deg2rad(0.5):
+                    pos = ic[0]
+                    vel = 0
 
         # vel = correction_low_speed(vel)
 

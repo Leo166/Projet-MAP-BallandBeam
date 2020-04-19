@@ -8,6 +8,10 @@ class PIDController:
         self.time = time
         self.control = []
         self.need_error = True
+        self.count = 0
+
+    def counter(self):
+        self.count += 1
 
     def add_error(self, e):
         self.error.append(e)
@@ -26,6 +30,7 @@ class PIDController:
         u = np.deg2rad(u)
         if other:
             self.add_control(u)
+            self.counter()
         return u
 
     def get_derivative(self):
@@ -68,7 +73,7 @@ class ManualController:
                     col2 = lgn[2].split("E")
                     com = float((col1[0]).replace(',', '.'))*10**float(col1[1]) #commande en degré
                     posm = float((col2[0]).replace(',', '.'))*10**float(col2[1]) #position en centimètre
-                    # com -= 7.5
+                    com -= 1.3
                     com = convert_angle_experimental(com)
                     com = np.deg2rad(com)
                     cmd.append(com)

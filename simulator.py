@@ -24,21 +24,20 @@ class Simulation:
         self.run = True
         xt = self.ic
         xs = self.set_point
-        sequence = False
-        if isinstance(xs, list) or isinstance(xs, np.ndarray):
-            print(xs[2])
-            sequence = True
+        # sequence = False
+        # if isinstance(xs, list) or isinstance(xs, np.ndarray):
+        #     sequence = True
         self.system.add_data([self.ic[0], self.ic[1]])
 
         while self.run:
             if self.controller.need_error:
-                if sequence:
-                    if self.step == len(self.set_point)-1:
-                        self.break_simulation()
-                    xs = self.set_point[self.step]
+                # if sequence:
+                if self.step == len(self.set_point)-1:
+                    self.break_simulation()
+                xs = self.set_point[self.step]
                 self.controller.add_error(xs - xt[0])
             else:
-                if len(controller.position) == len(self.set_point)-1:
+                if len(system.position) == len(controller.control)-1:
                     self.break_simulation()
 
             xt = self.system.get_solution(xt)
@@ -55,23 +54,24 @@ class Simulation:
 
 
 # time_simulation = 90   # duration of the simulation [s]
-# set_point = np.ones(400)*3   # point where the ball has to be stabilized [m]
-set_point = get_setpoints("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/document/datafromothers/Group5-Data_Exp/pid/square_slow.txt")
+set_point = np.ones(400)*3   # point where the ball has to be stabilized [m]
+# set_point = get_setpoints("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/document/datafromothers/Group5-Data_Exp/pid/square_slow.txt")
 ic = [0, 0]            # initial position and speed [m]
 bc = [-38.15, 38.15]    #[-34.1, 38.15]
 
-# controller = PIDController([-2, -0.2, 0], dt)
+# controller = PIDController([-1, 0, 0], dt)
+# controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/document/datafromothers/Group5-Data_Exp/data2.txt", dt)
 # controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_20_005.txt", dt)
 # controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_30_005.txt", dt)
-# controller3 = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_40_005.txt", dt)
+# controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_40_005.txt", dt)
 # controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/squarred/square_20_20.txt", dt)
 # controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/squarred/square_30_20.txt", dt)
 # controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/squarred/square_40_20.txt", dt)
-# controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/free_control/test4.txt", dt)
+# controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/free_control/test2.txt", dt)
 # controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/FW-Data_Exp/Data_TestCL_sine_A20cm_P50_1.txt.txt", dt)
-controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/FW-Data_Exp/Data_TestCL_Step_1.txt.txt", dt)
+# controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/FW-Data_Exp/Data_TestCL_Step_1.txt.txt", dt)
 system = DynamicalSystem(controller, bc)
-ic = [controller.position[0]-1, 0]            # initial position and speed [m]
+ic = [controller.position[0], 0]            # initial position and speed [m]
 simulation = Simulation(system, controller, set_point, ic, bc)
 simulation.start_simulation()
 
@@ -83,13 +83,14 @@ positionsys = controller.position
 
 
 t = np.arange(0.0, simulation.time, dt)
-print(len(t))
+print("temps", len(t))
 print("step :", simulation.step)
 print("position :", len(position))
+print("positionsys", len(positionsys))
 print("setpoint", len(set_point))
 print("cmd", len(command))
-# graphique([t], [position[0:-2]], [velocity[0:-2]], [positionsys], [command[2:len(position)]])
-graphique([t], [position[0:-1]], [velocity[0:-1]], [], [command])
+graphique([t], [position], [velocity], [positionsys], [command])      #manual
+# graphique([t[0:-1]], [position[0:-1]], [velocity[0:-1]], [], [command]) #pid
 breakpoint()
 
 # t = np.arange(0.0, time_simulation+2*dt, dt)

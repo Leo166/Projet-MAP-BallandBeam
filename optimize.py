@@ -5,9 +5,9 @@ from controller import *
 from dynamical_system import *
 from scipy.optimize import minimize
 
-def opt_param(x, controller):
-    time_simulation = 15
-    bc = [-100, 38.5]
+def opt_param(x, controller, t):
+    time_simulation = t
+    bc = [-38.5, 38.5]
     system = DynamicalSystem(controller, bc)
     def solve_equation(y, t, p, k, s, f):
         u = controller.last_u
@@ -31,6 +31,13 @@ def opt_param(x, controller):
         elif pos >= bc[1]:
             pos = bc[1]
             vel = 0
+
+        # if abs(vel) <= 0.33:
+        #     if controller.count >= 1:
+        #         if abs(controller.control[controller.count] - controller.last_u) <= np.deg2rad(0.5):
+        #             pos = ic[0]
+        #             vel = 0
+
         system.add_data([projection(controller.last_u, pos, False), vel])
         return np.array([pos, vel])
 
@@ -51,6 +58,5 @@ def opt_param(x, controller):
         system.current_ctrl = 0
         controller.count = 0
         controller.last_u = 0
-        print("ok")
         return pp
     return find_best_param(x)

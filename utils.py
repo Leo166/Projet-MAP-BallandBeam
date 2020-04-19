@@ -153,17 +153,16 @@ def graphique(t, pos, vel, posys, cmd):
 
         plt.subplot(2, 1, 2)
         plt.plot(t[count], pos[count], label="Position (simul)")
-        plt.plot(t[count], vel[count], "--", label="Velocity (simul)")
+        # plt.plot(t[count], vel[count], "--", label="Velocity (simul)")
         # plt.plot(t[count], acc[count], "--", label="acceleration (simul)")
         # for c, j in enumerate(acc[count]):
         #     if j <= 0.1 and j >= -0.1:
         #         plt.scatter(t[count][c], j, s=5)
         if len(posys) != 0:
             plt.plot(t[count], posys[count], label="Position")
-        plt.hlines(projection(convert_angle_experimental(0), 20), 0, t[0][-1], 'black', '--', linewidth=1)
-        plt.hlines(projection(convert_angle_experimental(0), -20), 0, t[0][-1], 'black', '--', linewidth=1)
+        plt.hlines(projection(convert_angle_experimental(0), 3), 0, t[0][-1], 'black', '--', linewidth=1)
+        # plt.hlines(projection(convert_angle_experimental(0), -20), 0, t[0][-1], 'black', '--', linewidth=1)
         plt.legend()
-
 
         plt.xlabel('Time [s]')
         plt.ylabel('Position [cm]')
