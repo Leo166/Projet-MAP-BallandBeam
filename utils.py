@@ -167,3 +167,18 @@ def graphique(t, pos, vel, posys, cmd):
         plt.xlabel('Time [s]')
         plt.ylabel('Position [cm]')
         plt.show()
+
+
+#Trouver la vraie valeur initiale en ayant celle de la caméra pour que projection donne celle-ci
+#x valeur intiale camera [cm], ctrl_initial[rad]
+def get_initial_value(x, ctrl_initial):
+    x_sys = x*8/10   #first guess
+    x_cam = projection(ctrl_initial, x_sys, False)
+    while abs(x-x_cam) >= 0.01:
+        # print("top")
+        if x_cam > x:
+            x_sys -= 0.001
+        else:
+            x_sys += 0.001
+        x_cam = projection(ctrl_initial, x_sys, False)
+    return x_sys

@@ -32,11 +32,11 @@ def opt_param(x, controller, t):
             pos = bc[1]
             vel = 0
 
-        # if abs(vel) <= 0.33:
-        #     if controller.count >= 1:
-        #         if abs(controller.control[controller.count] - controller.last_u) <= np.deg2rad(0.5):
-        #             pos = ic[0]
-        #             vel = 0
+        if abs(vel) <= 0.33:
+            if controller.count >= 1:
+                if abs(controller.control[controller.count] - controller.last_u) <= np.deg2rad(0.5):
+                    pos = ic[0]
+                    vel = 0
 
         system.add_data([projection(controller.last_u, pos, False), vel])
         return np.array([pos, vel])
