@@ -32,6 +32,8 @@ def convert_angle(al, dg=True):
 
 #le décalage d'angle entre la beam et le moteur est pris en compte dans la conversion et donc dans le système. Par conséquent, pas besoin de rajouter +-7.5
 def convert_angle_experimental(a):
+    correction = 1.3
+    a -= correction
     coef = [2.87661110e-04,  2.72469099e-01, - 2.05888233e+00]
     return coef[0]*a**2 + coef[1]*a + coef[2]
 
@@ -153,15 +155,15 @@ def graphique(t, pos, vel, posys, cmd):
 
         plt.subplot(2, 1, 2)
         plt.plot(t[count], pos[count], label="Position (simul)")
-        # plt.plot(t[count], vel[count], "--", label="Velocity (simul)")
+        plt.plot(t[count], vel[count], "--", label="Velocity (simul)")
         # plt.plot(t[count], acc[count], "--", label="acceleration (simul)")
         # for c, j in enumerate(acc[count]):
         #     if j <= 0.1 and j >= -0.1:
         #         plt.scatter(t[count][c], j, s=5)
         if len(posys) != 0:
             plt.plot(t[count], posys[count], label="Position")
-        plt.hlines(projection(convert_angle_experimental(0), 3), 0, t[0][-1], 'black', '--', linewidth=1)
-        # plt.hlines(projection(convert_angle_experimental(0), -20), 0, t[0][-1], 'black', '--', linewidth=1)
+        plt.hlines(projection(convert_angle_experimental(0), 20), 0, t[0][-1], 'black', '--', linewidth=1)
+        plt.hlines(projection(convert_angle_experimental(0), -20), 0, t[0][-1], 'black', '--', linewidth=1)
         plt.legend()
 
         plt.xlabel('Time [s]')
