@@ -35,6 +35,8 @@ class DynamicalSystem:
         else:
             derivative_control = 0
         dx2dt = (-eq[1]*x2 - eq[2]*x1 + eq[3]*np.sin(u) + m*x1*derivative_control**2 + eq[4])/eq[0]
+        
+        #print(t)
         return [dx1dt, dx2dt]
 
     def get_solution(self, ic):

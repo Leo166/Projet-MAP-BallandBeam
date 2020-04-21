@@ -43,8 +43,10 @@ ic = [-30, 0]            # initial position and speed [m]
 bc = [-34.1, 38.15]
 
 #controller = PIDController([-1.886 ,-0.277 ,-3.212], dt)
-#controller = INLSEF(dt)
-controller = NLPIDController(dt)
+#controller = INLSEF(dt,np.sign(ic[0]-set_point))
+controller = IADRC(dt, set_point,np.sign(ic[0]-set_point))
+#controller = ADRC(dt)
+#controller = NLPIDController(dt)
 #controller = SU(dt)
 #controller = ManualController("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/sinus/sin_30_005.txt", time_simulation)
 system = DynamicalSystem(controller, bc)
@@ -73,7 +75,7 @@ plt.xlabel("Time [s]")
 # plt.ylabel("Position [cm]")
 plt.legend()
 plt.show()
-if set_point<0:
-    print("overshoot: ",abs(min(position)-set_point))
+if set_point<ic[0]:
+    print("overshoot: ",(min(position)-set_point))
 else:
-    print("overshoot: ",max(position)-set_point)
+    print("overshoot: ",(max(position)-set_point))

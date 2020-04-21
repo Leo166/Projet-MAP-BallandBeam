@@ -6,6 +6,8 @@ import numpy as np
 def convert_angle(al, dg=True):
     if dg:
         al = al * np.pi / 180
+    essai=0.002877*((al+6.5)**2)+0.2725*(al+6.5)-2.059
+    return essai*180/np.pi
     Ax = 2.05
     Ay = 0.0
 
@@ -24,6 +26,7 @@ def convert_angle(al, dg=True):
     a = (F ** 2) + 1
     c = (E ** 2) - (2 * Dx * E) + Dx ** 2 + Dy ** 2 - L ** 2
     delta = b ** 2 - (4 * a * c)
+    #print(delta)
     y = (-1 * b + np.sqrt(delta)) / (2 * a)
     beta = np.arcsin((y - Dy) / L)
     beta = beta * 180 / np.pi
