@@ -3,6 +3,7 @@ from scipy import *
 from utils import *
 from controller import *
 from dynamical_system import *
+from simulator import *
 from scipy.optimize import minimize
 
 def opt_param(x, controller, t):
@@ -32,9 +33,9 @@ def opt_param(x, controller, t):
             pos = bc[1]
             vel = 0
 
-        if abs(vel) <= 0.33:
+        if abs(vel) <= 0.4:
             if controller.count >= 1:
-                if abs(controller.control[controller.count] - controller.last_u) <= np.deg2rad(0.5):
+                if abs(controller.control[controller.count] - controller.last_u) <= np.deg2rad(5):
                     pos = ic[0]
                     vel = 0
 
@@ -60,3 +61,21 @@ def opt_param(x, controller, t):
         controller.last_u = 0
         return pp
     return find_best_param(x)
+
+"""--------------------------"""
+"""--------------------------"""
+
+
+def opt_trajectory(ic, speed_limit):
+    def find_best_trajectory(k):
+        bc = [-38.15, 38.15]
+        controller = PIDController([k[0], k[1], k[2]], dt)
+        system = DynamicalSystem(controller, bc)
+        simulation = Simulation(system, controller, set_point, ic, bc)
+        position = simulation.start_simulation()
+        return scalar
+    res = minimize(find_best_trajectory, np.array([0, 0, 0, 0]), method='BFGS', tol=1e-6)
+    return np.array(res.x)
+
+# [0, 0] -- carré -- BFGS, Powell -- [0.52422432 0.08500503] -- 5.0794
+# [0, 0] -- carré -- Nelder-Mead -- [0.08980634 0.27940342] -- 13.1126

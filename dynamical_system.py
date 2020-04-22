@@ -5,24 +5,27 @@ from utils import *
 """Caractéristique système"""
 dt = 50*10**-3      # frequency of mesure [s]
 g = 9.81*10**2           # acceleration [cm/s^2]
-m = 0.0559          # mass [kg]
-# m = 0.0576          # mass [kg] FW
-r = 15*10**-1       # ball radius [cm]
-# r = 15.1*10**-1       # ball radius [cm] FW
+# m = 0.0559          # mass [kg]
+m = 0.0576          # mass [kg] FW
+# r = 15*10**-1       # ball radius [cm]
+r = 15.1*10**-1       # ball radius [cm] FW
 J = (2*m*r**2)/5    # inertial moment
 eta = 10**-5        # dynamic viscosity [kg/ms]
 vs = 1.414*10       # ball volume [cm^3]
 ro = 997/(10**6)            # density of water [kg/cm^3]
 param = [0, 0, 0, 0, 0]
-# param = [0.10745968, 0.30602608, 0,-0.93278782]#ok
-param = [0.11809485,  0.2819055,  -0.0154096,  -0.41265424]   #ok ref
+# param = [0.10745968, 0.30602608, 0, -0.93278782]#ok
+# param = [0.11809485,  0.2819055,  -0.0154096,  -0.41265424]   #ok ref
 # param = [0.11734496,  0.28836237, -0.12857947, -0.61645939]   #pas mal
-# param = [ 0.10997653,  0.29186298, -0.00358023, -0.72726524]
-# param = [0.12921003,  0.27934707, -0.12065793, -0.62997013]
-# param = [ 0.11970217,  0.27541133, -0.13573101, -0.62753956]
-# param = [0.10827614,  0.27581379, -0.14696738, -0.44238413]
-# param = [0.06771863,  1.16120643, -0.00702711, -0.80234127]
-# param = [ 0.12857387,  0.25753001,  1.17179222, -0.5302399] #tout fichier
+# param = [0.12065253,  0.36546263, -0.00968162, -0.36841601]   #sans correct
+# param = [0.04665993,  0.04139925, -0.01280646, -0.51983207]
+# param = [0.10767055,  0.29354308,-0.00990855, -0.20403751] #good
+# param = [ 0.05279321,  0.30701569, -0.00741271, -0.24989793] #0.2
+# param = [0.10453377,  0.29179852, -0.01422285, -0.24478251] #0.3
+# param = [0.09231504,  0.29565666, -0.01016332, -0.19932541] #0.4 - 3.82
+# param = [ 0.10210506,  0.29080151, -0.00997114, -0.18775064]#0.36 with big one- 3.9721
+# param = [0.10210506,  0.29080151 ,-0.00997114 ,-0.18775064]#0.36 with 2 big one- ?
+param = [0.10399143,  0.28519767, -0.01006414, -0.17522689]#0.4 with 2 big one - 4.028 very good
 eq = [m + J/r**2 + param[0], 6*r*eta*np.pi + param[1], 0, -m*g + ro*vs*g + param[2], 0]   #equa_diff 5y" + 4y' + 3y = 2u + const 0.4
 # eq = [5, 4, 3, 2, 0]
 
@@ -65,12 +68,12 @@ class DynamicalSystem:
             pos = bc[1]
             vel = 0
 
-        # print(vel)
-        # if abs(vel) <= 0.34:
-        #     if self.control.count >= 1:
-        #         if abs(self.control.control[self.control.count] - self.current_ctrl) <= np.deg2rad(0.5):
-        #             pos = ic[0]
-        #             vel = 0
+        print(vel)
+        if abs(vel) <= 0.4:
+            if self.control.count > 1:
+                if abs(self.control.control[self.control.count-2] - self.current_ctrl) <= np.deg2rad(0.5):
+                    pos = ic[0]
+                    vel = 0
 
         # vel = correction_low_speed(vel)
 
