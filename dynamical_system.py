@@ -30,13 +30,15 @@ eq = [m + J/r**2 + param[0], 6*r*eta*np.pi + param[1], 0, -m*g + ro*vs*g + param
 # eq = [5, 4, 3, 2, 0]
 
 class DynamicalSystem:
-    def __init__(self, control, bc):
+    def __init__(self, control, bc, idiot_proof, speed_limit):
         self.control = control
         self.bc = bc
         self.current_ctrl = 0
         self.position = []
         self.velocity = []
         self.acceleration = []
+        self.idiot_proof = idiot_proof
+        self.speed_limit = speed_limit
 
     def add_data(self, data):
         self.position.append(data[0])
@@ -68,14 +70,27 @@ class DynamicalSystem:
             pos = bc[1]
             vel = 0
 
-        print(vel)
+        if self.speed_limit != None:
+            vel_max = self.speed_limit[1]
+            vel_min = self.speed_limit[0]
+            if abs(vel) > vel_max and abs(vel) < vel_min:
+                if vel >=0:
+                    if vel > vel_max:
+                        vel = vel_max
+                    else:
+                        vel = vel_min
+                else:
+                    if abs(vel) > vel_max:
+                        vel = -vel_max
+                    else:
+                        vel = -vel_min
+
+        #Correction sur la balle à faible vitesse à faible angle
         if abs(vel) <= 0.4:
             if self.control.count > 1:
-                if abs(self.control.control[self.control.count-2] - self.current_ctrl) <= np.deg2rad(0.5):
+                if abs(self.control.control[self.control.count-2] - self.current_ctrl) <= np.deg2rad(5):
                     pos = ic[0]
                     vel = 0
-
-        # vel = correction_low_speed(vel)
 
         self.add_data([projection(self.current_ctrl, pos, False), vel])
         return np.array([pos, vel])

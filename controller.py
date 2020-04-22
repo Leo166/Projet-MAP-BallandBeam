@@ -37,8 +37,8 @@ class PIDController:
         return (self.control[-1] - self.control[-2]) / self.time
 
 class ManualController:
-    def __init__(self, filename, time):
-        self.control, self.position = self.load_manual_control(filename)
+    def __init__(self, u, time):
+        self.control = u
         self.time = time
         self.count = 0
         self.need_error = False
@@ -49,9 +49,6 @@ class ManualController:
 
     def get_control(self, *other):
         c = self.control[self.count]
-        # if abs(np.rad2deg(self.control[self.count+1]) - np.rad2deg(self.control[self.count])) >= 10:
-        #     c /= 2
-        #     print("ok")
         if other:
             self.counter()
         return c
@@ -72,9 +69,6 @@ class ManualControllerFile:
 
     def get_control(self, *other):
         c = self.control[self.count]
-        # if abs(np.rad2deg(self.control[self.count+1]) - np.rad2deg(self.control[self.count])) >= 10:
-        #     c /= 2
-        #     print("ok")
         if other:
             self.counter()
         return c

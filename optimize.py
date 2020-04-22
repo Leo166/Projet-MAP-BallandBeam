@@ -70,7 +70,7 @@ def opt_trajectory(ic, speed_limit):
     def find_best_trajectory(k):
         bc = [-38.15, 38.15]
         controller = PIDController([k[0], k[1], k[2]], dt)
-        system = DynamicalSystem(controller, bc)
+        system = DynamicalSystem(controller, bc, False, speed_limit)
         simulation = Simulation(system, controller, set_point, ic, bc)
         position = simulation.start_simulation()
         return scalar

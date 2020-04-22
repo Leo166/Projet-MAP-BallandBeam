@@ -78,10 +78,10 @@ controller = PIDController([-3, -0.4, -1], dt)
 
 
 #Francois Wielant
-# controller = ManualControllerFile("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/FW-Data_Exp/Data_TestCL_sine_A20cm_P50_1.txt.txt", dt)
-# controller = ManualControllerFile("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/FW-Data_Exp/Data_TestCL_Step_1.txt.txt", dt)
+#controller = ManualControllerFile("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/FW-Data_Exp/Data_TestCL_sine_A20cm_P50_1.txt.txt", dt)
+#controller = ManualControllerFile("C:/Users/Scorpion/Desktop/cours/Cours-Q6/Projet4/Projet-MAP-BallandBeam/raw_data/FW-Data_Exp/Data_TestCL_Step_1.txt.txt", dt)
 
-system = DynamicalSystem(controller, bc, idiot_proof, speed_limit)
+system = DynamicalSystem(controller, bc, False, None)
 # ic = [get_initial_value(controller.position[0], controller.control[0]), 0]            # initial position and speed [m]
 simulation = Simulation(system, controller, set_point, ic, bc)
 simulation.start_simulation()
@@ -128,7 +128,7 @@ def idiot_proof_test(x_init, u, flag_idiot_proof):
 #Objective 4, 5
 def multiple_positions(x_init, x_desired):
     controller = PIDController([-10, 0, 0], dt)
-    system = DynamicalSystem(controller, bc, flag_idiot_proof, None)
+    system = DynamicalSystem(controller, bc, True, None)
     simulation = Simulation(system, controller, x_desired, ic, bc)
     return simulation.start_simulation()
 
