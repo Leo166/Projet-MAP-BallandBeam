@@ -38,7 +38,7 @@ class PIDController:
 
 class ManualController:
     def __init__(self, u, time):
-        self.control = u
+        self.control = np.deg2rad(convert_angle_experimental(u))
         self.time = time
         self.count = 0
         self.need_error = False

@@ -155,7 +155,10 @@ def graphique(t, pos, vel, posys, cmd):
 
         plt.subplot(2, 1, 2)
         plt.plot(t[count], pos[count], label="Position (simul)")
-        # plt.plot(t[count], vel[count], "--", label="Velocity (simul)")
+        # plt.scatter(5, 15)
+        plt.plot(t[count], vel[count], "--", label="Velocity (simul)")
+        plt.hlines(5, 0, t[0][-1], 'orange', '--', linewidth=1)
+        plt.hlines(-5, 0, t[0][-1], 'orange', '--', linewidth=1)
         # plt.plot(t[count], acc[count], "--", label="acceleration (simul)")
         # for c, j in enumerate(acc[count]):
         #     if j <= 0.1 and j >= -0.1:

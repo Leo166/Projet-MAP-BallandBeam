@@ -73,7 +73,7 @@ class DynamicalSystem:
         if self.speed_limit != None:
             vel_max = self.speed_limit[1]
             vel_min = self.speed_limit[0]
-            if abs(vel) > vel_max and abs(vel) < vel_min:
+            if abs(vel) > abs(vel_max) or abs(vel) < abs(vel_min):
                 if vel >=0:
                     if vel > vel_max:
                         vel = vel_max
@@ -85,12 +85,12 @@ class DynamicalSystem:
                     else:
                         vel = -vel_min
 
-        #Correction sur la balle à faible vitesse à faible angle
-        if abs(vel) <= 0.4:
-            if self.control.count > 1:
-                if abs(self.control.control[self.control.count-2] - self.current_ctrl) <= np.deg2rad(5):
-                    pos = ic[0]
-                    vel = 0
+        # Correction sur la balle à faible vitesse à faible angle
+        # if abs(vel) <= 0.4:
+        #     if self.control.count > 1:
+        #         if abs(self.control.control[self.control.count-2] - self.current_ctrl) <= np.deg2rad(5):
+        #             pos = ic[0]
+        #             vel = 0
 
         self.add_data([projection(self.current_ctrl, pos, False), vel])
         return np.array([pos, vel])

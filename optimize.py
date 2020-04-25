@@ -62,20 +62,6 @@ def opt_param(x, controller, t):
         return pp
     return find_best_param(x)
 
-"""--------------------------"""
-"""--------------------------"""
 
+#trajectoire
 
-def opt_trajectory(ic, speed_limit):
-    def find_best_trajectory(k):
-        bc = [-38.15, 38.15]
-        controller = PIDController([k[0], k[1], k[2]], dt)
-        system = DynamicalSystem(controller, bc, False, speed_limit)
-        simulation = Simulation(system, controller, set_point, ic, bc)
-        position = simulation.start_simulation()
-        return scalar
-    res = minimize(find_best_trajectory, np.array([0, 0, 0, 0]), method='BFGS', tol=1e-6)
-    return np.array(res.x)
-
-# [0, 0] -- carré -- BFGS, Powell -- [0.52422432 0.08500503] -- 5.0794
-# [0, 0] -- carré -- Nelder-Mead -- [0.08980634 0.27940342] -- 13.1126
