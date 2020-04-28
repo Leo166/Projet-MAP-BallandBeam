@@ -32,8 +32,8 @@ def convert_angle(al, dg=True):
 
 #le décalage d'angle entre la beam et le moteur est pris en compte dans la conversion et donc dans le système. Par conséquent, pas besoin de rajouter +-7.5
 def convert_angle_experimental(a):
-    # correction = 1.3
-    # a -= correction
+    # correction = 0
+    # a += correction
     coef = [2.87661110e-04,  2.72469099e-01, - 2.05888233e+00]
     return coef[0]*a**2 + coef[1]*a + coef[2]
 
@@ -82,28 +82,69 @@ def correction_low_speed(speed):
     return new_speed
 
 
+# def projection(beta, r_reel, dg=True): #vraie
+#     h = 0.70 * 10 ** 2  # hauteur de la caméra [cm]
+#     d = -0.022 * 10 ** 2  # décalage du 0 de la caméra par rapport au centre de la beam
+#     c = 0.035 * 10 ** 2  # hauteur du centre de la balle par rapport au centre de rotation de la beam
+#     lam = -np.arctan(d / h)  # angle de décalage
+#
+#     # Convertir beta
+#     if dg:
+#         beta = beta * np.pi / 180
+#
+#     # Origine est le centre de rotation de la beam
+#     Bx = d * np.sin(beta) + (r_reel * np.cos(beta))  # position du centre de la balle
+#     By = -d * np.cos(beta) + (r_reel * np.sin(beta))  # position du centre de la balle
+#     Cy = c + h  # position de la caméra
+#
+#     # calcul de gamma centré(angle 0 à la verticale)
+#     gamma_centre = np.arctan(Bx / (Cy - By))
+#     # calcul de gamma (angle réel de la caméra (centre décalé))
+#     gamma = gamma_centre - lam
+#
+#     r_ordi = (gamma * 1.306482 * 180 + 4.159161 * np.pi) / np.pi
+#     return r_ordi
+
 def projection(beta, r_reel, dg=True):
     h = 0.70 * 10 ** 2  # hauteur de la caméra [cm]
     d = -0.022 * 10 ** 2  # décalage du 0 de la caméra par rapport au centre de la beam
     c = 0.035 * 10 ** 2  # hauteur du centre de la balle par rapport au centre de rotation de la beam
     lam = -np.arctan(d / h)  # angle de décalage
-
     # Convertir beta
     if dg:
-        beta = beta * np.pi / 180
-
+       beta = beta * np.pi / 180
     # Origine est le centre de rotation de la beam
-    Bx = d * np.sin(beta) + (r_reel * np.cos(beta))  # position du centre de la balle
-    By = -d * np.cos(beta) + (r_reel * np.sin(beta))  # position du centre de la balle
+    Bx = - c * np.sin(beta) + (r_reel * np.cos(beta))  # position du centre de la balle
+    By = c * np.cos(beta) + (r_reel * np.sin(beta))  # position du centre de la balle
     Cy = c + h  # position de la caméra
-
     # calcul de gamma centré(angle 0 à la verticale)
     gamma_centre = np.arctan(Bx / (Cy - By))
     # calcul de gamma (angle réel de la caméra (centre décalé))
     gamma = gamma_centre - lam
-
-    r_ordi = (gamma * 1.306482 * 180 + 4.159161 * np.pi) / np.pi
+    r_ordi = (gamma * 1.283 * 180 + 4.1 * np.pi) / np.pi
     return r_ordi
+
+# def projection_inverse(beta, r_ordi, dg=True): #vraie
+#     h = 0.70 * 10 ** 2  # hauteur de la caméra [cm]
+#     d = -0.022 * 10 ** 2  # décalage du 0 de la caméra par rapport au centre de la beam
+#     c = 0.035 * 10 ** 2  # hauteur du centre de la balle par rapport au centre de rotation de la beam
+#     lam = -np.arctan(d / h)  # angle de décalage
+#
+#     # Convertir beta
+#     if dg:
+#         beta = beta * np.pi / 180
+#
+#     # Calcul de l'angle de la caméra grâce à la fonction d'interpolation
+#     gamma_theorique = (r_ordi - 4.159161) * np.pi / (1.306482 * 180)
+#     # gamma centré (centre de la beam)
+#     gamma_c = gamma_theorique + lam
+#
+#     # Calcul de la position de la balle dans la beam
+#     r_theorique = ((np.tan(gamma_c) * (c + h - (d * np.cos(beta)))) + (d * np.sin(beta))) / (
+#                 np.cos(beta) + (np.tan(gamma_c) * np.sin(beta)))
+#     # conditions des limites de la beam
+#
+#     return r_theorique
 
 
 def projection_inverse(beta, r_ordi, dg=True):
@@ -111,21 +152,17 @@ def projection_inverse(beta, r_ordi, dg=True):
     d = -0.022 * 10 ** 2  # décalage du 0 de la caméra par rapport au centre de la beam
     c = 0.035 * 10 ** 2  # hauteur du centre de la balle par rapport au centre de rotation de la beam
     lam = -np.arctan(d / h)  # angle de décalage
-
     # Convertir beta
     if dg:
         beta = beta * np.pi / 180
-
     # Calcul de l'angle de la caméra grâce à la fonction d'interpolation
-    gamma_theorique = (r_ordi - 4.159161) * np.pi / (1.306482 * 180)
+    gamma_theorique = (r_ordi - 4.1) * np.pi / (1.283 * 180)
     # gamma centré (centre de la beam)
     gamma_c = gamma_theorique + lam
-
     # Calcul de la position de la balle dans la beam
-    r_theorique = ((np.tan(gamma_c) * (c + h - (d * np.cos(beta)))) + (d * np.sin(beta))) / (
+    r_theorique = ((np.tan(gamma_c) * (c + h - (c * np.cos(beta)))) + (c * np.sin(beta))) / (
                 np.cos(beta) + (np.tan(gamma_c) * np.sin(beta)))
     # conditions des limites de la beam
-
     return r_theorique
 
 def get_setpoints(filename):
@@ -154,7 +191,7 @@ def graphique(t, pos, vel, posys, cmd):
         plt.legend()
 
         plt.subplot(2, 1, 2)
-        plt.plot(t[count], pos[count], label="Position (simul)")
+        plt.plot(t[count], pos[count], label="Simulation")
         # plt.scatter(5, 15)
         plt.plot(t[count], vel[count], "--", label="Velocity (simul)")
         plt.hlines(5, 0, t[0][-1], 'orange', '--', linewidth=1)
@@ -164,8 +201,9 @@ def graphique(t, pos, vel, posys, cmd):
         #     if j <= 0.1 and j >= -0.1:
         #         plt.scatter(t[count][c], j, s=5)
         if len(posys) != 0:
-            plt.plot(t[count], posys[count], label="Position")
-        plt.hlines(projection(convert_angle_experimental(0), 10), 0, t[0][-1], 'black', '--', linewidth=1)
+            plt.plot(t[count], posys[count], label="Raw data")
+        # plt.hlines(projection(convert_angle_experimental(0), -10), 0, t[0][-1], 'black', '--', linewidth=1)
+        plt.hlines(0, 0, t[0][-1], 'black', '--', linewidth=1)
         # plt.hlines(projection(convert_angle_experimental(0), -20), 0, t[0][-1], 'black', '--', linewidth=1)
         plt.legend()
 

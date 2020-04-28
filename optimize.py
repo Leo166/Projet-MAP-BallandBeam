@@ -3,13 +3,13 @@ from scipy import *
 from utils import *
 from controller import *
 from dynamical_system import *
-from simulator import *
+
 from scipy.optimize import minimize
 
 def opt_param(x, controller, t):
     time_simulation = t
     bc = [-38.5, 38.5]
-    system = DynamicalSystem(controller, bc)
+    system = DynamicalSystem(controller, bc, False, None)
     def solve_equation(y, t, p, k, s, f):
         u = controller.last_u
         [x1, x2] = y
@@ -33,9 +33,9 @@ def opt_param(x, controller, t):
             pos = bc[1]
             vel = 0
 
-        if abs(vel) <= 0.4:
+        if abs(vel) <= 0.5:
             if controller.count >= 1:
-                if abs(controller.control[controller.count] - controller.last_u) <= np.deg2rad(5):
+                if abs(controller.control[controller.count] - controller.last_u) <= np.deg2rad(0.5):
                     pos = ic[0]
                     vel = 0
 

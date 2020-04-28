@@ -24,10 +24,17 @@ param = [0, 0, 0, 0, 0]
 # param = [0.10453377,  0.29179852, -0.01422285, -0.24478251] #0.3
 # param = [0.09231504,  0.29565666, -0.01016332, -0.19932541] #0.4 - 3.82
 # param = [ 0.10210506,  0.29080151, -0.00997114, -0.18775064]#0.36 with big one- 3.9721
-# param = [0.10210506,  0.29080151 ,-0.00997114 ,-0.18775064]#0.36 with 2 big one- ?
+# param = [0.10210506,  0.29080151, -0.00997114 ,-0.18775064]#0.36 with 2 big one- ?
 param = [0.10399143,  0.28519767, -0.01006414, -0.17522689]#0.4 with 2 big one - 4.028 very good
+
+
+#Autre test:
+# param = [0.09814629,  0.27466383, -0.01002565, -0.20379595] #erreur 7.23 angle 0.5 vel 0.4
+# param = [ 0.10935873,  0.29425049, -0.00970073, -0.23647272] #erreur 9.7977 angle 5 vel 0.4
+
 eq = [m + J/r**2 + param[0], 6*r*eta*np.pi + param[1], 0, -m*g + ro*vs*g + param[2], 0]   #equa_diff 5y" + 4y' + 3y = 2u + const 0.4
 # eq = [5, 4, 3, 2, 0]
+
 
 class DynamicalSystem:
     def __init__(self, control, bc, idiot_proof, speed_limit):
@@ -70,28 +77,29 @@ class DynamicalSystem:
             pos = bc[1]
             vel = 0
 
-        if self.speed_limit != None:
-            vel_max = self.speed_limit[1]
-            vel_min = self.speed_limit[0]
-            if abs(vel) > abs(vel_max) or abs(vel) < abs(vel_min):
-                if vel >=0:
-                    if vel > vel_max:
-                        vel = vel_max
-                    else:
-                        vel = vel_min
-                else:
-                    if abs(vel) > vel_max:
-                        vel = -vel_max
-                    else:
-                        vel = -vel_min
+        # if self.speed_limit != None:
+        #     vel_max = self.speed_limit[1]
+        #     vel_min = self.speed_limit[0]
+        #     if abs(vel) > abs(vel_max) or abs(vel) < abs(vel_min):
+        #         if vel >=0:
+        #             if vel > vel_max:
+        #                 vel = vel_max
+        #             else:
+        #                 vel = vel_min
+        #         else:
+        #             if abs(vel) > vel_max:
+        #                 vel = -vel_max
+        #             else:
+        #                 vel = -vel_min
 
         # Correction sur la balle à faible vitesse à faible angle
         # if abs(vel) <= 0.4:
-        #     if self.control.count > 1:
-        #         if abs(self.control.control[self.control.count-2] - self.current_ctrl) <= np.deg2rad(5):
+        #     if self.control.count >= 1:
+        #         if abs(self.control.control[self.control.count] - self.current_ctrl) <= np.deg2rad(0.5):
         #             pos = ic[0]
         #             vel = 0
 
         self.add_data([projection(self.current_ctrl, pos, False), vel])
+        # self.add_data([pos, vel])
         return np.array([pos, vel])
 
