@@ -1,19 +1,21 @@
 import numpy as np
 
+"""
 
-def idiot_proofing(system, controller, active=True):  # FONCTION IDIOT PROOFING (GERE LA VITESSE DE LA BALL QUAND ELLE SE RAPPROCHE DES BORDS)
-    if active:
-        if (abs(system.position[-1]) > 20):
-            v_max = 1 / system.position[-1]
-
-            if (system.velocity[-1] > v_max):
-                a = abs(10 / system.position[
-                    -1])  # en fonction de la position, pcq definir a en fonction de la v_max est inutile, puisque v_max depend de la position
-                controller.control[-1] = a * controller.control[-1]
-
-
-# #-------------------------------------------------- ##################################################### PARTIE DE L'IDIOT PROOFING FAIT AVEC OLIVIER
-#                                                     ############### MAIS QUE J'AI MODIFIE (A PRIORI INUTILE PUISQU'ON DETERMINE LE SETPOINT NOUS MEME)
-# R = 15*10**-3       # ball radius [m]
-# if (set_point > 38.15 - R) or (set_point < -34.1 + R) : #si le setpoint est en dehors du beam, on le met à 0 par défaut (ou autre, à voir ce qui a
-#     set_point = 0                                       #finalement été décidé dans le rapport
+@param array; x parameters to find
+@param object ManualControllerFile; controller;  controller use in for the dynamical system
+@return mean squared error for these parameters
+ """
+def idiot_proofing(position, velocity, v, active=True):  # FONCTION IDIOT PROOFING (GERE LA VITESSE DE LA BALL QUAND ELLE SE RAPPROCHE DES BORDS)
+    if (abs(position[-1]) >= 34):   # MOINS RESTIRCTIF, UN PEU BRUSQUE PARFOIS
+        p1 = 10
+        v_max = p1 / abs(position[-1])
+        # print("vmax", v_max)
+        # # print(velocity[-1])
+        if (abs(velocity[-1]) > v_max):
+            p2 = -100
+            a = p2*abs(1 / position[-1]) # en fonction de la position, pcq definir a en fonction de la v_max est inutile, puisque v_max depend de la position
+            v -= p2*np.deg2rad(np.tan((position[-1]-18*np.sign(position[-1]))*np.pi/80))
+        # v = - 3*v #méthode Adrien
+        # print("ok")
+    return v

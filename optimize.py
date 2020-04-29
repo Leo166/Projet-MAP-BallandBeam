@@ -1,15 +1,39 @@
 import numpy as np
 from scipy import *
-from utils import *
-from controller import *
 from dynamical_system import *
-
+from simulator import Simulation
 from scipy.optimize import minimize
 
+"""
+Optimize the parameters in the dynamical system which have to be put to [0, 0, 0, 0] 
+(the function is use by minimize from Python !)
+@param array; x; parameters to find
+@param object ManualControllerFile; controller;  controller use in for the dynamical system
+@return mean squared error for these parameters
+ """
+
+
+"""
+Optimize the parameters in the dynamical system which have to be put to [0, 0, 0, 0] 
+(the function is use by minimize from Python !)
+@param array; x; parameters to find
+@param object ManualControllerFile; controller;  controller use in for the dynamical system
+@return mean squared error for these parameters
+ """
+
+
+
+"""
+Optimize the parameters in the dynamical system which have to be put to [0, 0, 0, 0] 
+(the function is use by minimize from Python !)
+@param array; x; parameters to find
+@param object ManualControllerFile; controller;  controller use in for the dynamical system
+@return mean squared error for these parameters
+ """
 def opt_param(x, controller, t):
     time_simulation = t
     bc = [-38.5, 38.5]
-    system = DynamicalSystem(controller, bc, False, None)
+    system = DynamicalSystem(controller, bc, False)
     def solve_equation(y, t, p, k, s, f):
         u = controller.last_u
         [x1, x2] = y
@@ -33,7 +57,8 @@ def opt_param(x, controller, t):
             pos = bc[1]
             vel = 0
 
-        if abs(vel) <= 0.5:
+        # Correction on the speed at low speed at low variation angle
+        if abs(vel) <= 0.4:
             if controller.count >= 1:
                 if abs(controller.control[controller.count] - controller.last_u) <= np.deg2rad(0.5):
                     pos = ic[0]
@@ -49,17 +74,14 @@ def opt_param(x, controller, t):
         while t < time_simulation:  # bad
             xt = get_solution(xt, (x[0], x[1], x[2], x[3]))
             t += dt
-        # print(len(system.position))
-        # print(len(controller.position))
-        # print(np.array(system.position))
         pp = np.mean(abs(controller.position[0:len(system.position)] - system.position))
-        # print(system.position)
         system.position = []
         system.velocity = []
         system.current_ctrl = 0
         controller.count = 0
         controller.last_u = 0
         return pp
+
     return find_best_param(x)
 
 

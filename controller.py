@@ -1,4 +1,3 @@
-import numpy as np
 from utils import *
 
 class PIDController:
@@ -73,6 +72,7 @@ class ManualController:
     def get_derivative(self):
         return (self.control[self.count] - self.control[self.count-1]) / self.time
 
+
 class ManualControllerFile:
     def __init__(self, filename, time):
         self.control, self.position = self.load_manual_control(filename)
@@ -115,15 +115,25 @@ class ManualControllerFile:
 
 
 class INLSEF:
-    def __init__(self, time):
+    def __init__(self, time, vel_max=8.4):
         self.error = []
         self.time = time
         self.control = []
         self.need_error = True
         self.count = 0
+        self.vel_max = vel_max
 
     def counter(self):
         self.count += 1
+
+    """
+    Trouve le paramètre delta à appliquer pour atteindre la vitesse max
+    """
+    def param_vit_max(self):
+        vel_max = self.vel_max
+        m = 0.3861
+        p = 0.7532
+        return m * vel_max + p
 
     def add_error(self, e):
         self.error.append(e)
@@ -144,7 +154,7 @@ class INLSEF:
         k21 = 2.7004
         k22 = 1.5868
         k3 = 0.01
-        delta = 9
+        delta = self.param_vit_max()
         signeE = -np.sign(error[-1])
         u1 = k11+(k12/(1+np.exp(mu1*((error[-1])**2))))
         u1 = u1*((abs(error[-1]))**alpha1)*signeE

@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.integrate import odeint
-from utils import *
+from constraint import *
+from controller import *
 
 """Caractéristique système"""
 dt = 50*10**-3      # frequency of mesure [s]
@@ -37,7 +38,7 @@ eq = [m + J/r**2 + param[0], 6*r*eta*np.pi + param[1], 0, -m*g + ro*vs*g + param
 
 
 class DynamicalSystem:
-    def __init__(self, control, bc, idiot_proof, speed_limit):
+    def __init__(self, control, bc, idiot_proof):
         self.control = control
         self.bc = bc
         self.current_ctrl = 0
@@ -45,7 +46,7 @@ class DynamicalSystem:
         self.velocity = []
         self.acceleration = []
         self.idiot_proof = idiot_proof
-        self.speed_limit = speed_limit
+        self.controlmdf = [0]
 
     def add_data(self, data):
         self.position.append(data[0])
@@ -66,7 +67,11 @@ class DynamicalSystem:
 
     def get_solution(self, ic):
         bc = self.bc
-        self.current_ctrl = self.control.get_control(True)
+        v = self.control.get_control(True)
+        if self.idiot_proof: #idiot proofing
+            v = idiot_proofing(self.position, self.velocity, v)
+        self.current_ctrl = v
+        self.controlmdf.append(v)
         f = odeint(self.solve_equation, [ic[0], ic[1]], [0, dt])
         pos = f[:, 0][-1]
         vel = f[:, 1][-1]
@@ -76,21 +81,6 @@ class DynamicalSystem:
         elif pos >= bc[1]:
             pos = bc[1]
             vel = 0
-
-        # if self.speed_limit != None:
-        #     vel_max = self.speed_limit[1]
-        #     vel_min = self.speed_limit[0]
-        #     if abs(vel) > abs(vel_max) or abs(vel) < abs(vel_min):
-        #         if vel >=0:
-        #             if vel > vel_max:
-        #                 vel = vel_max
-        #             else:
-        #                 vel = vel_min
-        #         else:
-        #             if abs(vel) > vel_max:
-        #                 vel = -vel_max
-        #             else:
-        #                 vel = -vel_min
 
         # Correction sur la balle à faible vitesse à faible angle
         # if abs(vel) <= 0.4:

@@ -3,7 +3,12 @@ from matplotlib import pyplot as plt
 
 """Tools used in the simulator"""
 
-# Convert the angle of the motor to the angle of the beam
+"""
+Convert the angle of the motor to the angle of the beam (theoretical)
+@param float; beta;  angle of the motor in degree !
+@param boolean; dg;  True beta is in degree False otherwise (default is True)
+@return angle of the beam in degree !
+"""
 def convert_angle(al, dg=True):
     if dg:
         al = al * np.pi / 180
@@ -30,57 +35,59 @@ def convert_angle(al, dg=True):
     beta = beta * 180 / np.pi
     return beta
 
-#le décalage d'angle entre la beam et le moteur est pris en compte dans la conversion et donc dans le système. Par conséquent, pas besoin de rajouter +-7.5
+
+"""
+Convert the motor angle to the corresponding beam angle
+@param float; beta;  angle of the motor in degree !
+@return angle of the beam in degree !
+"""
 def convert_angle_experimental(a):
     # correction = 0
     # a += correction
     coef = [2.87661110e-04,  2.72469099e-01, - 2.05888233e+00]
     return coef[0]*a**2 + coef[1]*a + coef[2]
 
-dt = 50*10**-3
-def correction_motor_control(cmd):
-    control = []
-    deriv = [0]
-    acc = [0]
-    prev_control = 0
-    derivation_limit = np.deg2rad(0.1)
-    acc_limit = np.deg2rad(1000)
-    for count, i in enumerate(cmd):
-        current_control = cmd[count]
-        # if prev_control != 0:
-        derivation = (current_control - prev_control)
-        deriv.append(derivation)
-        acceleration = (deriv[-1] - deriv[-2])
-        acc.append(acceleration)
-        if abs(acceleration) > acc_limit:
-            if acceleration > 0:
-                d = deriv[-2] + acc_limit
-            else:
-                d = deriv[-2] - acc_limit
-            deriv[-1] = d
-            derivation = d
 
-        if abs(derivation) > derivation_limit:
-            if derivation > 0:
-                current_control = prev_control + derivation_limit
-            else:
-                current_control = prev_control - derivation_limit
-        control.append(current_control)
-        prev_control = current_control
-    return control, deriv, acc
+"""
+Convert the beam angle to the corresponding motor angle
+@param float; beta;  angle of the beam in degree !
+@return angle of the motor in degree !
+ """
+def convert_angle_experimental_inverse(a):
+    coef = [-0.01465599, 3.6137046, 7.53448346]
+    return coef[0] * a ** 2 + coef[1] * a + coef[2]
 
-def correction_low_speed(speed):
-    new_speed = speed
-    su = 0.5
-    # c = np.sqrt(np.abs(speed))
-    c = (speed**2)
-    if abs(speed) <= su:
-        if speed > 0:
-            new_speed = c
-        elif speed < 0:
-            new_speed = -c
-    return new_speed
 
+
+# def correction_motor_control(cmd):
+#     control = []
+#     deriv = [0]
+#     acc = [0]
+#     prev_control = 0
+#     derivation_limit = np.deg2rad(0.1)
+#     acc_limit = np.deg2rad(1000)
+#     for count, i in enumerate(cmd):
+#         current_control = cmd[count]
+#         # if prev_control != 0:
+#         derivation = (current_control - prev_control)
+#         deriv.append(derivation)
+#         acceleration = (deriv[-1] - deriv[-2])
+#         acc.append(acceleration)
+#         if abs(acceleration) > acc_limit:
+#             if acceleration > 0:
+#                 d = deriv[-2] + acc_limit
+#             else:
+#                 d = deriv[-2] - acc_limit
+#             deriv[-1] = d
+#             derivation = d
+#         if abs(derivation) > derivation_limit:
+#             if derivation > 0:
+#                 current_control = prev_control + derivation_limit
+#             else:
+#                 current_control = prev_control - derivation_limit
+#         control.append(current_control)
+#         prev_control = current_control
+#     return control, deriv, acc
 
 # def projection(beta, r_reel, dg=True): #vraie
 #     h = 0.70 * 10 ** 2  # hauteur de la caméra [cm]
@@ -105,6 +112,14 @@ def correction_low_speed(speed):
 #     r_ordi = (gamma * 1.306482 * 180 + 4.159161 * np.pi) / np.pi
 #     return r_ordi
 
+
+"""
+Convert the real position on the beam to the position seen by the camera
+@param float; beta;  angle of the beam in radian or degree
+@param float; r_reel; real position of the ball from the center of the beam
+@param boolean; dg; True if beta is in degree False otherwise
+@return position of the ball seen by the camera 
+ """
 def projection(beta, r_reel, dg=True):
     h = 0.70 * 10 ** 2  # hauteur de la caméra [cm]
     d = -0.022 * 10 ** 2  # décalage du 0 de la caméra par rapport au centre de la beam
@@ -147,6 +162,13 @@ def projection(beta, r_reel, dg=True):
 #     return r_theorique
 
 
+"""
+Convert the position seen by the camera to the real position on the beam
+@param float; beta;  angle of the beam in radian or degree
+@param float; r_ordi; position of the ball seen by the camera
+@param boolean; dg; True if beta is in degree False otherwise
+@return real position of the ball from the center of the beam
+ """
 def projection_inverse(beta, r_ordi, dg=True):
     h = 0.70 * 10 ** 2  # hauteur de la caméra [cm]
     d = -0.022 * 10 ** 2  # décalage du 0 de la caméra par rapport au centre de la beam
@@ -165,37 +187,53 @@ def projection_inverse(beta, r_ordi, dg=True):
     # conditions des limites de la beam
     return r_theorique
 
-def get_setpoints(filename):
-    pos = []
+
+"""
+Extract the controls of file. One control (motor control [°]) per lign
+@param string; filename;  name of the corresponding file
+@return (motor) controls
+ """
+def get_control_vector(filename):
+    cmd = []
     with open(filename, "r") as f:
         n = 0
         for line in f:
             if n > 2:
                 lgn = line.split()
-                pos.append(float(lgn[0].replace(',', '.')))
+                cmd.append(float(lgn[0].replace(',', '.')))
             n += 1
-    return np.array(pos)
+    return np.array(cmd)
 
+
+"""
+Use to plot graphics of the position, velocity and control of the dynamical system.
+Each array can contain many arrays of position in order to do more graphics.
+@param array; t;  time of the simulation
+@param array; position; position of the ball from the simulation
+@param array; velocity; velocity of the ball from the simulation
+@param array; posys; in the case of ManualControlFile, there is the position seen by the camera
+@param array; cmd; control from the simulation or the system
+@return /
+ """
 def graphique(t, pos, vel, posys, cmd):
     for count, i in enumerate(t):
         plt.subplot(2, 1, 1)
-        plt.plot(t[count], np.rad2deg(cmd[count]), label="Control")
-        c = correction_motor_control(cmd[count])
+        # c = correction_motor_control(cmd[count])
+        plt.plot(t[count], convert_angle_experimental_inverse(np.rad2deg(cmd[count])), label="Control")
         # plt.plot(t[count], c[0][0:len(c[0])], label="Control")
         # plt.plot(t[count], c[1][0:len(c[0])], label="Control speed")
         # plt.plot(t[count], c[2][0:len(c[0])], label="Control acc")
         # plt.scatter(t[count], correction_motor_control(cmd[count]), s = 5, c='red')
         # plt.title('A tale of 2 subplots')
-        plt.ylabel('Beam angle [°]')
-        # plt.ylabel('Position [cm]')
+        plt.ylabel('Motor angle [°]')
         plt.legend()
 
         plt.subplot(2, 1, 2)
         plt.plot(t[count], pos[count], label="Simulation")
         # plt.scatter(5, 15)
-        plt.plot(t[count], vel[count], "--", label="Velocity (simul)")
-        plt.hlines(5, 0, t[0][-1], 'orange', '--', linewidth=1)
-        plt.hlines(-5, 0, t[0][-1], 'orange', '--', linewidth=1)
+        # plt.plot(t[count], vel[count], "--", label="Velocity (simul)")
+        # plt.hlines(5, 0, t[0][-1], 'orange', '--', linewidth=1)
+        # plt.hlines(-5, 0, t[0][-1], 'orange', '--', linewidth=1)
         # plt.plot(t[count], acc[count], "--", label="acceleration (simul)")
         # for c, j in enumerate(acc[count]):
         #     if j <= 0.1 and j >= -0.1:
@@ -203,8 +241,7 @@ def graphique(t, pos, vel, posys, cmd):
         if len(posys) != 0:
             plt.plot(t[count], posys[count], label="Raw data")
         # plt.hlines(projection(convert_angle_experimental(0), -10), 0, t[0][-1], 'black', '--', linewidth=1)
-        plt.hlines(0, 0, t[0][-1], 'black', '--', linewidth=1)
-        # plt.hlines(projection(convert_angle_experimental(0), -20), 0, t[0][-1], 'black', '--', linewidth=1)
+        # plt.hlines(0, 0, t[0][-1], 'black', '--', linewidth=1)
         plt.legend()
 
         plt.xlabel('Time [s]')
@@ -225,3 +262,22 @@ def get_initial_value(x, ctrl_initial):
             x_sys += 0.001
         x_cam = projection(ctrl_initial, x_sys, False)
     return x_sys
+
+
+##############################
+# def opt_trajectory(ic, setpoint):
+#     def find_best_trajectory(k):
+#         bc = [-38.15, 38.15]
+#         controller = PIDController([k[0], k[1], k[2]], dt)
+#         system = DynamicalSystem(controller, bc, False, None)
+#         simulation = Simulation(system, controller, setpoint, ic, bc)
+#         position = simulation.start_simulation()
+#         erreur = np.mean(abs(position[1::] - setpoint))
+#         print("Erreur", erreur)
+#         return erreur
+#     res = minimize(find_best_trajectory, np.array([-1, -1, -1]), method='BFGS', tol=1e-2, bounds=((None, 0), (None, 0)))
+#     print(res)
+#     exit()
+#     return np.array(res.x)
+
+# opt_trajectory([0, 0, 0], np.ones(400)*10)
