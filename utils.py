@@ -5,32 +5,41 @@ from matplotlib import pyplot as plt
 
 """
 Convert the angle of the motor to the angle of the beam (theoretical)
-@param float; beta;  angle of the motor in degree !
+@param float; al;  angle of the motor in degree !
 @param boolean; dg;  True beta is in degree False otherwise (default is True)
 @return angle of the beam in degree !
 """
 def convert_angle(al, dg=True):
     if dg:
         al = al * np.pi / 180
+    # Position of differents points
     Ax = 2.05
     Ay = 0.0
 
     Dx = 0.0
     Dy = 0.90
-
-    R = 0.55
+    
+    # Length of radius
     M = 0.9
     L = 1.5
-    # Calcul des coordonnees de B
+    
+    R = 0.55 # radius of the ball
+
+    # Calculation of B coordinates
     Bx = Ax - R * np.cos(al)
-    By = Ay + R * np.sin(al)   #+ avant
+    By = Ay + R * np.sin(al)   
+    # Thanks to equations of circles centered in D with radius L and centered in B 
+    # with radius M we can find an expression of x in term of y : x=E-Fy 
     E = (Bx ** 2 - Dx ** 2 + By ** 2 - Dy ** 2 + L ** 2 - M ** 2) / (2 * (Bx - Dx))
     F = (By - Dy) / (Bx - Dx)
+    # By injecting x in an equation of circle with L radius here, we obtain a function 
+    # of the second degree that we are going to resolve
     b = (2 * Dx * F) - (2 * E * F) - (2 * Dy)
     a = (F ** 2) + 1
     c = (E ** 2) - (2 * Dx * E) + Dx ** 2 + Dy ** 2 - L ** 2
     delta = b ** 2 - (4 * a * c)
     y = (-1 * b + np.sqrt(delta)) / (2 * a)
+    # Calculation of the beam angle + conversion to degree
     beta = np.arcsin((y - Dy) / L)
     beta = beta * 180 / np.pi
     return beta
@@ -38,7 +47,7 @@ def convert_angle(al, dg=True):
 
 """
 Convert the motor angle to the corresponding beam angle
-@param float; beta;  angle of the motor in degree !
+@param float; a;  angle of the motor in degree !
 @return angle of the beam in degree !
 """
 def convert_angle_experimental(a):
@@ -89,6 +98,7 @@ def convert_angle_experimental_inverse(a):
 #         prev_control = current_control
 #     return control, deriv, acc
 
+
 # def projection(beta, r_reel, dg=True): #vraie
 #     h = 0.70 * 10 ** 2  # hauteur de la caméra [cm]
 #     d = -0.022 * 10 ** 2  # décalage du 0 de la caméra par rapport au centre de la beam
@@ -116,28 +126,31 @@ def convert_angle_experimental_inverse(a):
 """
 Convert the real position on the beam to the position seen by the camera
 @param float; beta;  angle of the beam in radian or degree
-@param float; r_reel; real position of the ball from the center of the beam
+@param float; actual_pos; real position of the ball from the center of the beam
 @param boolean; dg; True if beta is in degree False otherwise
 @return position of the ball seen by the camera 
  """
-def projection(beta, r_reel, dg=True):
-    h = 0.70 * 10 ** 2  # hauteur de la caméra [cm]
-    d = -0.022 * 10 ** 2  # décalage du 0 de la caméra par rapport au centre de la beam
-    c = 0.035 * 10 ** 2  # hauteur du centre de la balle par rapport au centre de rotation de la beam
-    lam = -np.arctan(d / h)  # angle de décalage
-    # Convertir beta
+def projection(beta, actual_pos, dg=True):
+    h = 0.70 * 10 ** 2  # camera height [cm]
+    d = -0.022 * 10 ** 2  # shift between 0 camera and center of the beam
+    c = 0.035 * 10 ** 2  # height of the centre of the ball relative to the centre of rotation of the beam
+    lam = -np.arctan(d / h)  # offset angle
+    # Convert beta
     if dg:
        beta = beta * np.pi / 180
-    # Origine est le centre de rotation de la beam
-    Bx = - c * np.sin(beta) + (r_reel * np.cos(beta))  # position du centre de la balle
-    By = c * np.cos(beta) + (r_reel * np.sin(beta))  # position du centre de la balle
-    Cy = c + h  # position de la caméra
-    # calcul de gamma centré(angle 0 à la verticale)
+    # Origin is the centre of rotation of the beam
+    # Position of the centre of the ball
+    Bx = - c * np.sin(beta) + (actual_pos * np.cos(beta))  
+    By = c * np.cos(beta) + (actual_pos * np.sin(beta))  
+    # Position of the camera
+    Cy = c + h  
+    # calculation of gamma center (0 angle to the vertical)
     gamma_centre = np.arctan(Bx / (Cy - By))
-    # calcul de gamma (angle réel de la caméra (centre décalé))
+    # calculation of gamma (real camera angle (center shifted))
     gamma = gamma_centre - lam
-    r_ordi = (gamma * 1.283 * 180 + 4.1 * np.pi) / np.pi
-    return r_ordi
+    # calculation of the position of the ball seen by the camera
+    camera_pos = (gamma * 1.283 * 180 + 4.1 * np.pi) / np.pi
+    return camera_pos
 
 # def projection_inverse(beta, r_ordi, dg=True): #vraie
 #     h = 0.70 * 10 ** 2  # hauteur de la caméra [cm]
@@ -170,22 +183,21 @@ Convert the position seen by the camera to the real position on the beam
 @return real position of the ball from the center of the beam
  """
 def projection_inverse(beta, r_ordi, dg=True):
-    h = 0.70 * 10 ** 2  # hauteur de la caméra [cm]
-    d = -0.022 * 10 ** 2  # décalage du 0 de la caméra par rapport au centre de la beam
-    c = 0.035 * 10 ** 2  # hauteur du centre de la balle par rapport au centre de rotation de la beam
-    lam = -np.arctan(d / h)  # angle de décalage
-    # Convertir beta
+    h = 0.70 * 10 ** 2  # camera height [cm]
+    d = -0.022 * 10 ** 2  # shift between 0 camera and center of the beam
+    c = 0.035 * 10 ** 2  # height of the centre of the ball relative to the centre of rotation of the beam
+    lam = -np.arctan(d / h)  # offset angle
+    # Convert beta
     if dg:
-        beta = beta * np.pi / 180
-    # Calcul de l'angle de la caméra grâce à la fonction d'interpolation
+       beta = beta * np.pi / 180
+    # Calculation of the camera viewing angle thanks to the interpolation function
     gamma_theorique = (r_ordi - 4.1) * np.pi / (1.283 * 180)
-    # gamma centré (centre de la beam)
+    # Calculation of gamma center (0 angle to the vertical)
     gamma_c = gamma_theorique + lam
-    # Calcul de la position de la balle dans la beam
-    r_theorique = ((np.tan(gamma_c) * (c + h - (c * np.cos(beta)))) + (c * np.sin(beta))) / (
+    # Calculation of the actual position of the ball
+    actual_pos = ((np.tan(gamma_c) * (c + h - (c * np.cos(beta)))) + (c * np.sin(beta))) / (
                 np.cos(beta) + (np.tan(gamma_c) * np.sin(beta)))
-    # conditions des limites de la beam
-    return r_theorique
+    return actual_pos
 
 
 """
@@ -249,8 +261,8 @@ def graphique(t, pos, vel, posys, cmd):
         plt.show()
 
 
-#Trouver la vraie valeur initiale en ayant celle de la caméra pour que projection donne celle-ci
-#x valeur intiale camera [cm], ctrl_initial[rad]
+# Find the true initial value by having that of the camera so that projection gives it
+# x camera intial value [cm], ctrl_initial[rad]
 def get_initial_value(x, ctrl_initial):
     x_sys = x*8/10   #first guess
     x_cam = projection(ctrl_initial, x_sys, False)
