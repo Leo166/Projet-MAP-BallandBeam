@@ -19,11 +19,12 @@ def convert_angle(al, dg=True):
     Dx = 0.0
     Dy = 0.90
     
-    # Length of radius
+    # Radius of circles
     M = 0.9
     L = 1.5
     
-    R = 0.55 # radius of the ball
+    # Radius of the ball
+    R = 0.55 
 
     # Calculation of B coordinates
     Bx = Ax - R * np.cos(al)
