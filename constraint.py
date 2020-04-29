@@ -17,7 +17,7 @@ def idiot_proofing(position, velocity, v):
          
             if(abs(v) < 0.04):               # 0.04 chosen experimentally
                 v -= p2*np.deg2rad(np.tan((position[-1]-18*np.sign(position[-1]))*np.pi/80))
-                # if the current control is smaller than the chosen limit, we decrease it by value based on some experimentally
+                # if the current control is smaller than the chosen limit, we decrease it by a value based on some experimentally
                 # chosen parameters and the tangent function applied on the current position
             else:
                 v = -2*v                     # else we set a control in the opposite way of the current one
